@@ -198,7 +198,7 @@ pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
 vertualenvはプロジェクト単位でインストールするパッケージやpythonのバージョンを切り替えることができる仮想環境です。
 
 ```
-[vagrant@localhost ~]$ sudo /usr/local/bin/pip  install virtualenv
+[vagrant@localhost ~]$ sudo  python3 -m pip  install virtualenv
 [vagrant@localhost ~]$ virtualenv --version
 13.1.2
 ```
@@ -207,27 +207,27 @@ vertualenvはプロジェクト単位でインストールするパッケージ�
 
 ```
 [vagrant@localhost ~]$ cd /vagrant/
-[vagrant@localhost vagrant]$ mkdir ipdesigner
+[vagrant@localhost vagrant]$ mkdir app1
 ```
 
 作成したディレクトリに、virtualenvで仮想環境を構築します。
 このときPython3.4.3をデフォルト設定するようにします。
 
 ```
-[vagrant@localhost ipdesigner]$ virtualenv --python=/usr/local/bin/python3.4 env_app1
+[vagrant@localhost app1]$ virtualenv env_app1
 
-[vagrant@localhost ipdesigner]$ source env_app1/bin/activate
-(env_app1)[vagrant@localhost ipdesigner]$
+[vagrant@localhost app1]$ source env_app1/bin/activate
+(env_app1)[vagrant@localhost app1]$
 ```
 
 アプリケーション専用の仮想環境を構築することができました。
 仮想環境の状態を確認してみます。
 ```
-(env_app1)[vagrant@localhost ipdesigner]$ python --version
+(env_app1)[vagrant@localhost app1]$ python --version
 Python 3.4.3
-(env_app1)[vagrant@localhost ipdesigner]$ pip --version
+(env_app1)[vagrant@localhost app1]$ pip --version
 pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
-(env_app1)[vagrant@localhost ipdesigner]$ pip list
+(env_app1)[vagrant@localhost app1]$ pip list
 pip (7.1.2)
 setuptools (12.0.5)
 virtualenv (13.1.2)
@@ -238,10 +238,6 @@ wheel (0.24.0)
 ```
 (env_app1)[vagrant@localhost ipdesigner]$ deactivate
 [vagrant@localhost ipdesigner]$
-```
-
-再度、仮想環境に戻る場合はこちら。
-```
 ```
 
 環境構築はこれで完成です。
