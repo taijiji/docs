@@ -102,12 +102,13 @@ Mon Sep  7 23:14:11 UTC 2015
 
 仮想マシンが正常に作成できたことが確認できました。
 
-ひとまずCentOSにインストールされているモジュールを最新にします。
+CentOSにインストールされている全パッケージを最新にしておきます。
 
 ```
-yum install
+sudo yum update -y
 ```
 
+これで仮想マシンにおける準備はOKです。
 
 次章では、仮想マシンにDjangoとPythonをインストールしていきます。
 
@@ -119,4 +120,132 @@ CentOS7では、デフォルトでPython2.7.5がインストールされてい�
 Python 2.7.5
 ```
 
-ここではPython3系の最新版であるPython3.4.3をインストールします。
+ここではPython3系の最新版であるPython3.4.3をダウンロードします。
+```
+[vagrant@localhost ~]$ cd /usr/local/src
+[vagrant@localhost src]$ sudo wget https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tgz
+```
+
+次にPython3.4.3をインストールしていきます。
+```
+[vagrant@localhost src]$ sudo tar xzvf Python-3.4.3.tgz
+[vagrant@localhost src]$ ls
+Python-3.4.3  Python-3.4.3.tgz
+[vagrant@localhost src]$ cd Python-3.4.3
+[vagrant@localhost Python-3.4.3]$ sudo ./configure
+[vagrant@localhost Python-3.4.3]$ sudo make
+[vagrant@localhost Python-3.4.3]$ sudo make altinstall
+```
+
+/usr/local/bin/配下にpython3.4がインストールされたことが確認できます。
+
+```
+[vagrant@localhost Python-3.4.3]$ ls -al /usr/local/bin
+total 22356
+drwxr-xr-x.  2 root root     4096 Sep  8 00:15 .
+drwxr-xr-x. 12 root root     4096 Jul 14 05:11 ..
+-rwxr-xr-x   1 root root      101 Sep  8 00:15 2to3-3.4
+-rwxr-xr-x   1 root root      241 Sep  8 00:15 easy_install-3.4
+-rwxr-xr-x   1 root root       99 Sep  8 00:15 idle3.4
+-rwxr-xr-x   1 root root      213 Sep  8 00:15 pip3.4
+-rwxr-xr-x   1 root root       84 Sep  8 00:15 pydoc3.4
+-rwxr-xr-x   2 root root 11423753 Sep  8 00:14 python3.4
+-rwxr-xr-x   2 root root 11423753 Sep  8 00:14 python3.4m
+-rwxr-xr-x   1 root root     3032 Sep  8 00:15 python3.4m-config
+-rwxr-xr-x   1 root root      236 Sep  8 00:15 pyvenv-3.4
+
+[vagrant@localhost ~]$ /usr/local/bin/python3.4 --version
+Python 3.4.3
+```
+
+Python 3.4.3コマンドのPATHを通します。
+
+```
+ln -s /usr/local/bin/python3.4 /usr/bin/python3
+```
+
+こうすることで、python3 コマンドでpython3.4.3を呼び出すことができます。
+
+```
+[vagrant@localhost ~]$ python3 -V
+Python 3.4.3
+
+[vagrant@localhost ~]$ sudo python3 -V
+Python 3.4.3
+```
+
+次に、pipをインストールしていきます。
+pipはPythonのサードパーティ製パッケージをインストールするコマンドです。
+Python3.4以降ではデフォルトでインストールされています。
+
+```
+[vagrant@localhost ~]$ python3.4 -m pip list
+You are using pip version 6.0.8, however version 7.1.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+pip (6.0.8)
+setuptools (12.0.5)
+```
+
+pipのversionが古いようなので下記コマンドでpipをupgradeします。
+```
+[vagrant@localhost ~]$ sudo python3 -m pip install --upgrade pip
+
+[vagrant@localhost ~]$ sudo python3 -m pip --version
+pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
+```
+
+次にvertualenvをインストールします。
+vertualenvはプロジェクト単位でインストールするパッケージやpythonのバージョンを切り替えることができる仮想環境です。
+
+```
+[vagrant@localhost ~]$ sudo /usr/local/bin/pip  install virtualenv
+[vagrant@localhost ~]$ virtualenv --version
+13.1.2
+```
+
+次に、/vagrantディレクトリにアリケーション用のディレクトリを作ります。
+
+```
+[vagrant@localhost ~]$ cd /vagrant/
+[vagrant@localhost vagrant]$ mkdir ipdesigner
+```
+
+作成したディレクトリに、virtualenvで仮想環境を構築します。
+このときPython3.4.3をデフォルト設定するようにします。
+
+```
+[vagrant@localhost ipdesigner]$ virtualenv --python=/usr/local/bin/python3.4 env_app1
+
+[vagrant@localhost ipdesigner]$ source env_app1/bin/activate
+(env_app1)[vagrant@localhost ipdesigner]$
+```
+
+アプリケーション専用の仮想環境を構築することができました。
+仮想環境の状態を確認してみます。
+```
+(env_app1)[vagrant@localhost ipdesigner]$ python --version
+Python 3.4.3
+(env_app1)[vagrant@localhost ipdesigner]$ pip --version
+pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
+(env_app1)[vagrant@localhost ipdesigner]$ pip list
+pip (7.1.2)
+setuptools (12.0.5)
+virtualenv (13.1.2)
+wheel (0.24.0)
+```
+
+なお仮想環境から離脱する場合は、下記のようにします。
+```
+(env_app1)[vagrant@localhost ipdesigner]$ deactivate
+[vagrant@localhost ipdesigner]$
+```
+
+再度、仮想環境に戻る場合はこちら。
+```
+```
+
+環境構築はこれで完成です。
+次の章では、Djangoのアプケーションを開発していきます。
+
+#Djangoをインストール
+Djangoをインストールします。
