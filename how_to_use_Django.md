@@ -33,11 +33,14 @@ drwxr-xr-x   3 taiji  staff   102  9  8 07:53 .vagrant/
 -rw-r--r--   1 taiji  staff  3081  9  8 07:53 Vagrantfile
 ```
 
-この中のvagrantfileを下記のように編集します
+vagrantfileを下記のように編集します。
+ここではDjangoで作成したwebアプリにアクセスするためのネットワーク設定も追加しています。
+
 
 ```rb
 Vagrant.configure(2) do |config|
    config.vm.box = "centos70"
+   config.vm.network "forwarded_port", guest: 8000, host: 80
 end
 ```
 
@@ -95,7 +98,7 @@ drwxr-xr-x  16 taiji  staff   544  9  8 07:49 ../
 drwxr-xr-x   3 taiji  staff   102  9  8 07:53 .vagrant/
 -rw-r--r--   1 taiji  staff  3081  9  8 07:53 Vagrantfile
 -rw-r--r--   1 taiji  staff    29  9  8 08:14 date.txt
-[taiji@aooni] ~/work/vagrant/centos7_ipdesigner
+[taiji@aooni] ~/work/vagrant/centos7_app1
 % cat date.txt
 Mon Sep  7 23:14:11 UTC 2015
 ```
@@ -161,7 +164,7 @@ Python 3.4.3
 Python 3.4.3コマンドのPATHを通します。
 
 ```
-ln -s /usr/local/bin/python3.4 /usr/bin/python3
+[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/python3.4 /usr/bin/python3
 ```
 
 こうすることで、python3 コマンドでpython3.4.3を呼び出すことができます。
@@ -176,7 +179,8 @@ Python 3.4.3
 
 次に、pipをインストールしていきます。
 pipはPythonのサードパーティ製パッケージをインストールするコマンドです。
-Python3.4以降ではデフォルトでインストールされています。
+pipコマンドは、Python3.3以前ではインストールする必要がありましたが、
+Python3.4以降ではデフォルトで提供されています。
 
 ```
 [vagrant@localhost ~]$ python3.4 -m pip list
@@ -190,54 +194,66 @@ pipのversionが古いようなので下記コマンドでpipをupgradeします
 ```
 [vagrant@localhost ~]$ sudo python3 -m pip install --upgrade pip
 
-[vagrant@localhost ~]$ sudo python3 -m pip --version
+[vagrawnt@localhost ~]$ sudo python3 -m pip --version
 pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
 ```
 
-次にvertualenvをインストールします。
-vertualenvはプロジェクト単位でインストールするパッケージやpythonのバージョンを切り替えることができる仮想環境です。
+次にvenvを構築します。
+venvはプロジェクト単位でインストールするパッケージやpythonのバージョンを切り替えることができる仮想環境です。
+Python2系ではvirtualenvなどをインストールする必要がありましたが、
+Python3系ではpyvenvという名前でデフォルト機能として提供されています。
 
-```
-[vagrant@localhost ~]$ sudo  python3 -m pip  install virtualenv
-[vagrant@localhost ~]$ virtualenv --version
-13.1.2
-```
-
-次に、/vagrantディレクトリにアリケーション用のディレクトリを作ります。
-
+まず/vagrantディレクトリにアリケーション用のディレクトリを作ります。
 ```
 [vagrant@localhost ~]$ cd /vagrant/
 [vagrant@localhost vagrant]$ mkdir app1
 ```
 
-作成したディレクトリに、virtualenvで仮想環境を構築します。
+次に作成したディレクトリに、pyvenvで仮想環境を構築します。
 このときPython3.4.3をデフォルト設定するようにします。
 
 ```
-[vagrant@localhost app1]$ virtualenv env_app1
+[vagrant@localhost vagrant]$ cd app1
+[vagrant@localhost app1]$ pyvenv-3.4 env_app1
+``
 
+作成した仮想環境にログインします。
+
+```
 [vagrant@localhost app1]$ source env_app1/bin/activate
-(env_app1)[vagrant@localhost app1]$
+(env_app1) [vagrant@localhost app1]$
 ```
 
 アプリケーション専用の仮想環境を構築することができました。
 仮想環境の状態を確認してみます。
+
 ```
 (env_app1)[vagrant@localhost app1]$ python --version
 Python 3.4.3
 (env_app1)[vagrant@localhost app1]$ pip --version
-pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
-(env_app1)[vagrant@localhost app1]$ pip list
+pip 6.0.8 from /vagrant/app1/env_app1/lib/python3.4/site-packages (python 3.4)
+
+(env_app1) [vagrant@localhost app1]$ pip list
+You are using pip version 6.0.8, however version 7.1.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+pip (6.0.8)
+setuptools (12.0.5)
+```
+
+pyvenv環境のpipもバージョンが古いので、upgradeします。
+```
+(env_app1) [vagrant@localhost app1]$ pip install --upgrade pip
+
+(env_app1) [vagrant@localhost app1]$ pip list
 pip (7.1.2)
 setuptools (12.0.5)
-virtualenv (13.1.2)
-wheel (0.24.0)
 ```
 
 なお仮想環境から離脱する場合は、下記のようにします。
+
 ```
-(env_app1)[vagrant@localhost ipdesigner]$ deactivate
-[vagrant@localhost ipdesigner]$
+(env_app1)[vagrant@localhost app1]$ deactivate
+[vagrant@localhost app1]$
 ```
 
 環境構築はこれで完成です。
@@ -245,3 +261,93 @@ wheel (0.24.0)
 
 #Djangoをインストール
 Djangoをインストールします。
+
+```
+(env_app1)[vagrant@localhost app1]$ pip install django
+
+(env_app1)[vagrant@localhost app1]$ pip freeze
+Django==1.8.4
+wheel==0.24.0
+```
+
+#Djangoプロジェクトを生成
+
+```
+(env_app1)[vagrant@localhost app1]$ django-admin startproject app1
+
+(env_app1)[vagrant@localhost app1]$ ls -al
+total 0
+drwxr-xr-x 1 vagrant vagrant 136 Sep  8 03:06 .
+drwxr-xr-x 1 vagrant vagrant 204 Sep  8 02:53 ..
+drwxr-xr-x 1 vagrant vagrant 204 Sep  8 02:57 env_app1
+drwxr-xr-x 1 vagrant vagrant 136 Sep  8 03:06 app1
+```
+
+プロジェクトを生成すると下記のようなディレクトリが作成されます。
+
+```
+app1/
+|-- app1
+|   |-- __init__.py
+|   |-- settings.py
+|   |-- urls.py
+|   `-- wsgi.py
+`-- manage.py
+```
+
+Djangoアプリを作成します。
+
+```
+(env_app1)[vagrant@localhost app1]$  python manage.py startapp as2518db
+```
+
+as2518ディレクトリが追加される
+
+```
+(env_app1)[vagrant@localhost app1]$ tree app1/
+app1/
+|-- as2518db
+|   |-- __init__.py
+|   |-- admin.py
+|   |-- migrations
+|   |   `-- __init__.py
+|   |-- models.py
+|   |-- tests.py
+|   `-- views.py
+|-- app1
+|   |-- __init__.py
+|   |-- __pycache__
+|   |   |-- __init__.cpython-34.pyc
+|   |   `-- settings.cpython-34.pyc
+|   |-- settings.py
+|   |-- urls.py
+|   `-- wsgi.py
+`-- manage.py
+```
+
+次にDBを構築します。
+ここではmariadbを使います
+
+```
+(env_app1)[root@localhost app1]# yum install mariadb-server
+(env_app1)[vagrant@localhost app1]$ sudo yum install mariadb-devel
+(env_app1)[root@localhost app1]# python3 -m pip install PyMySQL
+```
+
+dbにrootユーザを作成します
+
+```
+
+```
+
+```
+(env_app1)[vagrant@localhost app1]$ python manage.py migrate
+```
+
+
+
+現在の状態でのDjango webアプリを立ち上げてみます。
+```
+(env_app1)[vagrant@localhost app1]$ python manage.py runserver 0.0.0.0:8000
+
+```
