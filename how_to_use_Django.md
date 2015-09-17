@@ -1,11 +1,39 @@
 #概要
-PythonのWebフレームワークであるDjangoを使ってWebアプリを作ってみます。
+今回はPythonのWebフレームワークであるDjangoを使って、Webアプリケーションを作っていきます。
+私自身がWebアプリ開発の勉強中なので、
+手順をまとめる意図でゼロベースでインフラ環境を構築するところから書いています。
+不要に感じる部分は適宜読み飛ばしてください。
 
-PythonのWebフレームワークは幾つかあります。
-- Flask : 比較的軽量なフレームワークです。
-- Djanog : もりもりのフレームワークです。
+#Python Webフレームワーク
+日本ではRuby on Railsが有名ですが、
+PythonにもWebフレームワークがいくつか用意されており、その中でも有名で多く使われている2つを紹介します。
 
-業務で使う場合はDjagoであれば大体のものを書けるので、Djangoに慣れておくとよいでしょう。
+## [Django](https://www.djangoproject.com/)
+Python Webフレームワークとしては最も利用されています。テンプレートエンジンやORM(データベースとプログラム上のオブジェクトをマッピングしてくれる機能)、テスト機能などを包括しているオールインワン型のWebフレームワークです。またWebアプリケーションの管理者用GUIを自動生成してくれる便利な機能もあります。操作する対象ファイルが多いので学習コストはありますが、実サービスでも十分運用していくことができるので長く使い続けることができます。
+
+## [Flask](http://flask.pocoo.org/)
+Flaskは軽量なWebフレームワークで、Djangoの次に人気があるようです。オールインワン型のDjanogに比べると、 かなり少ないファイル構造で構成されており、学習コストも低く初心者向きです。
+データベースを使わないような小さいWebアプリケーションの開発に向いています。
+規模の大きいWebアプリケーションを作成する場合には、Flask以外のPythonパッケージを組み合わせながら開発することになります。
+
+これらのほかにもBottle, Pyramid, Tornade, PloneといったWebフレームワークがありますが、上記２つが多く使われているようです。
+
+今回はDjnagoを用いてWebアプリケーションを開発していきます。
+業務で使うWebアプリケーションを開発する場合は、Djangoであれば大体のものをカバーすることができます。
+初めは苦戦はするかもしれませんが、早いうちにDjangoに慣れておくことをお勧めします。
+Djangoを使うことで、モダンなWeb開発プロセスも学ぶことができます。
+
+
+#環境構築
+まずは環境構築を進めていきます。以下の環境で開発を進めていきます。
+
+- ホストマシン
+  - MacBookAir OSX Yosemite 10.10.5
+- Vagrant 1.7.4
+- Virtualbox 4.3.18
+- CentOS 7.1.1503
+- Python 3.4.3
+- Django 1.8.4
 
 #Vagrantで仮想マシンを立ち上げる
 
@@ -36,7 +64,6 @@ drwxr-xr-x   3 taiji  staff   102  9  8 07:53 .vagrant/
 vagrantfileを下記のように編集します。
 ここではDjangoで作成したwebアプリにアクセスするためのネットワーク設定も追加しています。
 
-
 ```rb
 Vagrant.configure(2) do |config|
    config.vm.box = "centos70"
@@ -53,6 +80,7 @@ end
 仮想マシンが正常に立ち上がれば、下記コマンドで確認することができます。
 
 ```
+
 % vagrant status
 Current machine states:
 
@@ -177,7 +205,9 @@ Python 3.4.3
 Python 3.4.3
 ```
 
-次に、pipをインストールしていきます。
+# pipを使う
+
+次に、pipを使う準備をします。
 pipはPythonのサードパーティ製パッケージをインストールするコマンドです。
 pipコマンドは、Python3.3以前ではインストールする必要がありましたが、
 Python3.4以降ではデフォルトで提供されています。
@@ -198,12 +228,14 @@ pipのversionが古いようなので下記コマンドでpipをupgradeします
 pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
 ```
 
+# venv環境を使う
 次にvenvを構築します。
 venvはプロジェクト単位でインストールするパッケージやpythonのバージョンを切り替えることができる仮想環境です。
 Python2系ではvirtualenvなどをインストールする必要がありましたが、
-Python3系ではpyvenvという名前でデフォルト機能として提供されています。
+Python3系ではpyvenvというデフォルト機能として提供されています。
 
 まず/vagrantディレクトリにアリケーション用のディレクトリを作ります。
+
 ```
 [vagrant@localhost ~]$ cd /vagrant/
 [vagrant@localhost vagrant]$ mkdir app1
@@ -215,13 +247,15 @@ Python3系ではpyvenvという名前でデフォルト機能として提供さ�
 ```
 [vagrant@localhost vagrant]$ cd app1
 [vagrant@localhost app1]$ pyvenv-3.4 env_app1
-``
+```
 
 作成した仮想環境にログインします。
 
 ```
+
 [vagrant@localhost app1]$ source env_app1/bin/activate
 (env_app1) [vagrant@localhost app1]$
+
 ```
 
 アプリケーション専用の仮想環境を構築することができました。
@@ -241,6 +275,7 @@ setuptools (12.0.5)
 ```
 
 pyvenv環境のpipもバージョンが古いので、upgradeします。
+
 ```
 (env_app1) [vagrant@localhost app1]$ pip install --upgrade pip
 
@@ -259,7 +294,7 @@ setuptools (12.0.5)
 環境構築はこれで完成です。
 次の章では、Djangoのアプケーションを開発していきます。
 
-#Djangoをインストール
+# Djangoをインストール
 Djangoをインストールします。
 
 ```
@@ -270,7 +305,7 @@ Django==1.8.4
 wheel==0.24.0
 ```
 
-#Djangoプロジェクトを生成
+# Djangoプロジェクトを生成
 
 ```
 (env_app1)[vagrant@localhost app1]$ django-admin startproject app1
@@ -295,7 +330,7 @@ app1/
 `-- manage.py
 ```
 
-Djangoアプリを作成します。
+# Djangoアプリを作成します。
 
 ```
 (env_app1)[vagrant@localhost app1]$  python manage.py startapp as2518db
@@ -325,29 +360,174 @@ app1/
 `-- manage.py
 ```
 
+# MariaDBの構築
 次にDBを構築します。
-ここではmariadbを使います
+ここではMySQLのフォークであるmariadbを使います。
 
 ```
-(env_app1)[root@localhost app1]# yum install mariadb-server
-(env_app1)[vagrant@localhost app1]$ sudo yum install mariadb-devel
-(env_app1)[root@localhost app1]# python3 -m pip install PyMySQL
+(env_app1)[root@localhost app1]# sudo yum install -y mariadb-server
+(env_app1)[vagrant@localhost app1]$ sudo yum install -y mariadb-devel
+(env_app1)[root@localhost app1]# pip install  mysqlclient
 ```
 
-dbにrootユーザを作成します
+mariadbを起動します
 
+```
+(env_app1) [vagrant@localhost app1]$ sudo systemctl start mariadb
+(env_app1) [vagrant@localhost app1]$ sudo systemctl enable mariadb
+```
+
+MariaDBにrootユーザでログインします。
+
+```
+(env_app1) [vagrant@localhost app1]$ mysql -u root
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 3
+Server version: 5.5.44-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+```
+
+新規にDBを作成します。
+
+```
+MariaDB [(none)]> CREATE DATABASE {{ DB名 }} CHARACTER SET utf8;
+```
+
+DBにアクセスできるユーザを追加します。
+
+```
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON {{ DB名 }}.* TO {{ ユーザ名 }}@localhost IDENTIFIED BY '{{ ユーザパスワード }}';
+```
+
+正常にDBとユーザが作成されたか確認します。
+
+```
+(env_app1) [vagrant@localhost app1]$ mysql -u {{ ユーザ名 }} -p{{ ユーザパスワード }}
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 5
+Server version: 5.5.44-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 ```
 
 ```
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| {{ DB名 }}           |
+| test               |
++--------------------+
+3 rows in set (0.01 sec)
 
 ```
-(env_app1)[vagrant@localhost app1]$ python manage.py migrate
+
+これでDBの初期設定は完了です。
+
+# Djanogアプリの初期設定
+アプリの初期設定を進めていきます。
+
+```
+% vi app1/settings.py
+
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    (下記を追記)
+    'django.contrib.humanize',
+    'app1'
+ )
+
+(中略)
+
+ DATABASES = {
+    'default': {
+        (下記を削除)
+        #'ENGINE': 'django.db.backends.sqlieete3',
+        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        (下記を追加)
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': [database],
+        'USER': [user],
+        'PASSWORD': [password],
+        'HOST': [host],
+        'PORT': [port],
+    }
+ }
+
+(中略)
+
+#削除
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+#追加
+LANGUAGE_CODE = 'ja'
+
+TIME_ZONE = 'Asia/Tokyo'
+
+(中略)
+
+#下記を追加
+STATIC_ROOT=os.path.join(BASE_DIR, "static")
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 ```
 
+[project]/[project]/urls.pyを編集
 
+ ```
+ urlpatterns = [
+    url(r'^admin/', include(admin.site.urls)),
+    # 下記を追加
+    url(r'^as2518db/', include('app1.urls', namespace = 'app1')),
+]
+ ```
+
+# DBを初期化
+
+```
+(env_app1) [vagrant@localhost app1]$  python manage.py makemigrations
+(env_app1) [vagrant@localhost app1]$ python manage.py migrate
+```
+
+# Djangoアプリの起動
+まずFiwarewallを無効にします(開発環境のみに実施します。本番サーバでは設定しないようにご注意ください)
+
+```
+sudo systemctl stop firewalld
+```
 
 現在の状態でのDjango webアプリを立ち上げてみます。
 ```
 (env_app1)[vagrant@localhost app1]$ python manage.py runserver 0.0.0.0:8000
+```
 
+webブラウザからアクセスします。
+
+```
+http://192.168.33.15:8000/
+```
+
+# DjangoのDBのダンプを出力する
+以下のコマンドでその時点で格納されているDBをJason形式で書き出すことができます。
+
+```
+python manage.py dumpdata app1 --format=json --indent=2 > app1_dump.json
+```
+
+書き出されたJason形式のDBを読み込むには下記コマンドを実施します。
+
+```
+python manage.py loaddata app1_dump.json
 ```
