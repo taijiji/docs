@@ -51,12 +51,12 @@ Djangoを使うことで、モダンなWeb開発プロセスも学ぶことが�
 
 ```
 % mkdir django_apps
+% cd django_apps
 ```
 
 次に、下記のコマンドでvagrantの設定ファイルを作成します。
 
 ```
-% cd django_app
 % vagrant init
 ```
 
@@ -71,7 +71,8 @@ drwxr-xr-x  18 taiji  staff   612  9 18 01:03 ../
 ```
 
 次にVagrant boxで公開されているCentOS7のイメージをダウンロードおよびインストールをします。
-まずhttp://www.vagrantbox.es/ にて公開されているCentOS7のboxファイルのダウンロードを実施します。（完了までに数分かかります。）
+まずhttp://www.vagrantbox.es/ にて公開されているCentOS7のboxファイルのダウンロードを実施します。
+（完了までに数分かかります。）
 
 ```
 % vagrant box add centos70 https://github.com/holms/vagrant-centos7-box/releases/download/7.1.1503.001/CentOS-7.1.1503-x86_64-netboot.box
@@ -93,7 +94,7 @@ Vagrant.configure(2) do |config|
 end
 ```
 
-Vagrantfileで記述した仮想マシンを起動します。(起動まで数分かかります)
+Vagrantfileで記述した設定で仮想マシンを起動します。(起動まで数分かかります)
 
 ```
 % vagrant up
@@ -102,7 +103,6 @@ Vagrantfileで記述した仮想マシンを起動します。(起動まで数�
 仮想マシンが正常に立ち上がれば、下記コマンドで確認することができます。
 
 ```
-
 % vagrant status
 Current machine states:
 
@@ -122,35 +122,36 @@ Welcome to your Vagrant-built virtual machine.
 [vagrant@localhost ~]$
 ```
 
-仮想マシン、ホストマシンのフォルダ共有が有効になっているか確認します。デフォルトでは、仮想マシンの/vagrantディレクトリと、ホストマシンのvagrantfileが設置されたディレクトリが共有されています。
+仮想マシン、ホストマシンのフォルダ共有が有効になっているか確認します。
+デフォルトでは、仮想マシンの/vagrantディレクトリと、ホストマシンのVagrantfileが設置されたディレクトリが共有されています。
 ここでは共有機能をテストするために、簡単なファイルを設置してみます。
 
 ```:仮想マシン
 [vagrant@localhost ~]$ cd /vagrant/
-[vagrant@localhost vagrant]$ date > date.txt
+[vagrant@localhost vagrant]$ date >date.txt
 [vagrant@localhost vagrant]$ cat date.txt
-Mon Sep  7 23:14:11 UTC 2015
+Fri Sep 18 04:57:51 UTC 2015
 
-[vagrant@localhost vagrant]$ ls -al
+[vagrant@localhost vagrant]$ ls -la
 total 12
-drwxr-xr-x   1 vagrant vagrant  170 Sep  7 23:14 .
-dr-xr-xr-x. 18 root    root    4096 Sep  7 22:57 ..
-drwxr-xr-x   1 vagrant vagrant  102 Sep  7 22:53 .vagrant
--rw-r--r--   1 vagrant vagrant 3081 Sep  7 22:53 Vagrantfile
--rw-r--r--   1 vagrant vagrant   29 Sep  7 23:14 date.txt
+drwxr-xr-x   1 vagrant vagrant  170 Sep 18 04:57 .
+dr-xr-xr-x. 18 root    root    4096 Sep 18 04:48 ..
+drwxr-xr-x   1 vagrant vagrant  102 Sep 17 16:11 .vagrant
+-rw-r--r--   1 vagrant vagrant 3226 Sep 18 04:44 Vagrantfile
+-rw-r--r--   1 vagrant vagrant   29 Sep 18 04:57 date.txt
 ```
 
 ```:ホストマシン
-% ls -al
+% ls -la
 total 16
-drwxr-xr-x   5 taiji  staff   170  9  8 08:14 ./
-drwxr-xr-x  16 taiji  staff   544  9  8 07:49 ../
-drwxr-xr-x   3 taiji  staff   102  9  8 07:53 .vagrant/
--rw-r--r--   1 taiji  staff  3081  9  8 07:53 Vagrantfile
--rw-r--r--   1 taiji  staff    29  9  8 08:14 date.txt
-[taiji@aooni] ~/work/vagrant/centos7_app1
+drwxr-xr-x   5 taiji  staff   170  9 18 13:57 ./
+drwxr-xr-x  18 taiji  staff   612  9 18 01:03 ../
+drwxr-xr-x   3 taiji  staff   102  9 18 01:11 .vagrant/
+-rw-r--r--   1 taiji  staff  3226  9 18 13:44 Vagrantfile
+-rw-r--r--   1 taiji  staff    29  9 18 13:57 date.txt
+
 % cat date.txt
-Mon Sep  7 23:14:11 UTC 2015
+Fri Sep 18 04:57:51 UTC 2015
 ```
 
 仮想マシンが正常に作成できたことが確認できました。
@@ -158,14 +159,14 @@ Mon Sep  7 23:14:11 UTC 2015
 CentOSにインストールされている全パッケージを最新にしておきます。
 
 ```
-sudo yum update -y
+[vagrant@localhost vagrant]$ sudo yum update -y
 ```
 
 これで仮想マシンにおける準備はOKです。
 
-次章では、仮想マシンにDjangoとPythonをインストールしていきます。
+次章では、仮想マシンにPythonとDjanogをインストールしていきます。
 
-# Python3系をインストール
+## Python3系をインストール
 CentOS7では、デフォルトでPython2.7.5がインストールされています。
 
 ```
@@ -173,17 +174,17 @@ CentOS7では、デフォルトでPython2.7.5がインストールされてい�
 Python 2.7.5
 ```
 
-ここではPython3系の最新版であるPython3.4.3をダウンロードします。
+ここではPython3系の最新版であるPython3.4.3をインストールします。
 ```
 [vagrant@localhost ~]$ cd /usr/local/src
 [vagrant@localhost src]$ sudo wget https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tgz
-```
-
-次にPython3.4.3をインストールしていきます。
-```
 [vagrant@localhost src]$ sudo tar xzvf Python-3.4.3.tgz
-[vagrant@localhost src]$ ls
-Python-3.4.3  Python-3.4.3.tgz
+[vagrant@localhost src]$ ls -al
+total 19108
+drwxr-xr-x.  3 root   root         48 Sep 18 05:05 .
+drwxr-xr-x. 12 root   root       4096 Jul 14 05:11 ..
+drwxrwxr-x  15 veewee veewee     4096 Feb 25  2015 Python-3.4.3
+-rw-r--r--   1 root   root   19554643 Feb 25  2015 Python-3.4.3.tgz
 [vagrant@localhost src]$ cd Python-3.4.3
 [vagrant@localhost Python-3.4.3]$ sudo ./configure
 [vagrant@localhost Python-3.4.3]$ sudo make
@@ -195,28 +196,34 @@ Python-3.4.3  Python-3.4.3.tgz
 ```
 [vagrant@localhost Python-3.4.3]$ ls -al /usr/local/bin
 total 22356
-drwxr-xr-x.  2 root root     4096 Sep  8 00:15 .
+drwxr-xr-x.  2 root root     4096 Sep 18 05:09 .
 drwxr-xr-x. 12 root root     4096 Jul 14 05:11 ..
--rwxr-xr-x   1 root root      101 Sep  8 00:15 2to3-3.4
--rwxr-xr-x   1 root root      241 Sep  8 00:15 easy_install-3.4
--rwxr-xr-x   1 root root       99 Sep  8 00:15 idle3.4
--rwxr-xr-x   1 root root      213 Sep  8 00:15 pip3.4
--rwxr-xr-x   1 root root       84 Sep  8 00:15 pydoc3.4
--rwxr-xr-x   2 root root 11423753 Sep  8 00:14 python3.4
--rwxr-xr-x   2 root root 11423753 Sep  8 00:14 python3.4m
--rwxr-xr-x   1 root root     3032 Sep  8 00:15 python3.4m-config
--rwxr-xr-x   1 root root      236 Sep  8 00:15 pyvenv-3.4
+-rwxr-xr-x   1 root root      101 Sep 18 05:09 2to3-3.4
+-rwxr-xr-x   1 root root      241 Sep 18 05:09 easy_install-3.4
+-rwxr-xr-x   1 root root       99 Sep 18 05:09 idle3.4
+-rwxr-xr-x   1 root root      213 Sep 18 05:09 pip3.4
+-rwxr-xr-x   1 root root       84 Sep 18 05:09 pydoc3.4
+-rwxr-xr-x   2 root root 11423753 Sep 18 05:09 python3.4
+-rwxr-xr-x   2 root root 11423753 Sep 18 05:09 python3.4m
+-rwxr-xr-x   1 root root     3032 Sep 18 05:09 python3.4m-config
+-rwxr-xr-x   1 root root      236 Sep 18 05:09 pyvenv-3.4
+```
 
+インストールされたPythonおよびパッケージマネージャであるpipのバージョンを確認します。
+```
 [vagrant@localhost ~]$ /usr/local/bin/python3.4 --version
 Python 3.4.3
+
+[vagrant@localhost Python-3.4.3]$ /usr/local/bin/pip3.4 --version
+pip 6.0.8 from /usr/local/lib/python3.4/site-packages (python 3.4)
 ```
 
 Python 3.4.3コマンドのPATHを通します。
 
 ```
-[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/python3.4 /usr/bin/python3
-```
-
+[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/python3.4 /usr/bin/python
+[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/pip3.4  /usr/bin/pip
+``
 こうすることで、python3 コマンドでpython3.4.3を呼び出すことができます。
 
 ```
