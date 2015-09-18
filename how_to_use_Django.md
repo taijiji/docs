@@ -266,12 +266,12 @@ pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
 ```
 
 ###参考 : Python2.7.8以前、Python3.3系以前でpipをインストール
-CentoOS7標準のPython2.7.5では、pipを別途インストールする必要があります。
-Python2.7.5でもpipを使いたい場合は下記の手順を試してください。
-今回はPython2系は使用しないので、実行しなくてOKです。
+Python2.7.8以前、Python3.3系以前では、pipは別途インストールする必要があります。
+その場合は下記の手順を試してください。
+今回はPython3.4系を利用しますので、実行しなくてOKです。
 
 ```
-$ wget “https://bootstrap.pypa.io/get-pip.py”
+$ sudo wget https://bootstrap.pypa.io/get-pip.py
 
 #rootユーザにインストール
 $ sudo python get-pip.py
@@ -280,11 +280,11 @@ $ sudo python get-pip.py
 $ python get-pip.py –user
 ```
 
-
-
-# venv環境を使う
+## pyvenvで仮想実行環境を構築
 次にvenvを構築します。
-venvはプロジェクト単位でインストールするパッケージやpythonのバージョンを切り替えることができる仮想環境です。
+利用パッケージやpythonのバージョンを、venvはプロジェクト単位で切り替えることができる仮想実行環境です。
+仮想実行環境を利用することでより、アプリケーションごとに環境を変えてテストしたり、
+アプケーションを動作させるためのパッケージを明文化することができます。
 Python2系ではvirtualenvなどをインストールする必要がありましたが、
 Python3系ではpyvenvというデフォルト機能として提供されています。
 
@@ -292,72 +292,93 @@ Python3系ではpyvenvというデフォルト機能として提供されてい�
 
 ```
 [vagrant@localhost ~]$ cd /vagrant/
-[vagrant@localhost vagrant]$ mkdir app1
+[vagrant@localhost vagrant]$ mkdir django_apps
+[vagrant@localhost vagrant]$ cd django_apps/
 ```
 
 次に作成したディレクトリに、pyvenvで仮想環境を構築します。
 このときPython3.4.3をデフォルト設定するようにします。
 
 ```
-[vagrant@localhost vagrant]$ cd app1
-[vagrant@localhost app1]$ pyvenv-3.4 env_app1
+[vagrant@localhost app1]$ pyvenv-3.4 venv_app1
+
+[vagrant@localhost django_apps]$ ls -la
+total 0
+drwxr-xr-x 1 vagrant vagrant 102 Sep 18 06:05 .
+drwxr-xr-x 1 vagrant vagrant 204 Sep 18 06:02 ..
+drwxr-xr-x 1 vagrant vagrant 238 Sep 18 06:04 venv_app1
 ```
 
-作成した仮想環境にログインします。
+作成した仮想実行環境に読み込みます。
 
 ```
 
-[vagrant@localhost app1]$ source env_app1/bin/activate
-(env_app1) [vagrant@localhost app1]$
-
+[vagrant@localhost django_apps]$ source venv_app1/bin/activate
+(venv_app1) [vagrant@localhost django_apps]$
 ```
 
-アプリケーション専用の仮想環境を構築することができました。
+専用の仮想実行環境を構築することができました。
 仮想環境の状態を確認してみます。
 
 ```
-(env_app1)[vagrant@localhost app1]$ python --version
+(venv_app1) [vagrant@localhost django_apps]$ python --version
 Python 3.4.3
-(env_app1)[vagrant@localhost app1]$ pip --version
-pip 6.0.8 from /vagrant/app1/env_app1/lib/python3.4/site-packages (python 3.4)
-
-(env_app1) [vagrant@localhost app1]$ pip list
-You are using pip version 6.0.8, however version 7.1.2 is available.
-You should consider upgrading via the 'pip install --upgrade pip' command.
-pip (6.0.8)
-setuptools (12.0.5)
+(venv_app1) [vagrant@localhost django_apps]$ which python
+/vagrant/django_apps/venv_app1/bin/python
 ```
 
-pyvenv環境のpipもバージョンが古いので、upgradeします。
+このように、作成されたvenv_app1ディレクトリ配下に、新たにPython実行環境が作成されていることがわかります。
+pipについても同様に、venv_app1ディレクトリ配下に作成されていることが確認できます。
 
 ```
-(env_app1) [vagrant@localhost app1]$ pip install --upgrade pip
-
-(env_app1) [vagrant@localhost app1]$ pip list
-pip (7.1.2)
-setuptools (12.0.5)
+(venv_app1) [vagrant@localhost django_apps]$ pip --version
+pip 6.0.8 from /vagrant/django_apps/venv_app1/lib/python3.4/site-packages (python 3.4)
 ```
 
-なお仮想環境から離脱する場合は、下記のようにします。
+pyvenv環境のpipもバージョンが古いので、upgradeしておきます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ pip install --upgrade pip
+```
+
+なお仮想実行環境から離脱する場合は、下記のようにします。
 
 ```
 (env_app1)[vagrant@localhost app1]$ deactivate
 [vagrant@localhost app1]$
 ```
 
-環境構築はこれで完成です。
-次の章では、Djangoのアプケーションを開発していきます。
-
-# Djangoをインストール
-Djangoをインストールします。
+再度、仮想実行環境にログインする場合は、作成時と同じコマンドを入力します。
 
 ```
-(env_app1)[vagrant@localhost app1]$ pip install django
-
-(env_app1)[vagrant@localhost app1]$ pip freeze
-Django==1.8.4
-wheel==0.24.0
+[vagrant@localhost django_apps]$ source venv_app1/bin/activate
+(venv_app1) [vagrant@localhost django_apps]$
 ```
+
+以降の章では、作成した仮想実行環境「venv_app1」を使って進めていきます。
+
+## Djangoをインストール
+Djangoのパッケージをpipを使ってインストールします。
+pipを使うことで、以下のように簡単にインストールをすることができます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ pip install django
+
+(venv_app1) [vagrant@localhost django_apps]$ pip list
+Django (1.8.4)
+pip (7.1.2)
+setuptools (12.0.5)
+```
+
+# MriaDBをインストール
+MariaDBはMySQLをフォークして立ち上がれられたプロジェクトであり、MySQLと機能互換があります。
+データベース操作コマンドやPythonパッケージをMySQLと同様のものを使って操作することができます。
+
+MariaDBの
+
+
+環境構築はこれで完了です。
+次の章では、いよいよDjangoを使ってアプケーションを開発していきます。
 
 # Djangoプロジェクトを生成
 
