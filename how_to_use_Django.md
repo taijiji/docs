@@ -1,4 +1,4 @@
-# Title: ゼロから始めるWebアプリケーション開発 (Python Django編)
+# Title: ゼロから作るWebアプリケーション (Python Django編)
 
 #概要
 今回はPythonのWebフレームワークであるDjangoを使って、Webアプリケーションを作っていきます。
@@ -590,12 +590,26 @@ server {
 }
 ```
 
-試しに、デフォルトで用意されているindex.htmlにHTTPアクセスできるか確認してみます。
-ここではVagrantで指定したprivate_networkのIPアドレスを利用して、ホストマシンのWebブラウザからアクセスしています。
+デフォルトで用意されているindex.htmlにHTTPアクセスできるか確認してみます。
+
+まず確認する前に、firewalldを停止状態にします。
+(フィルタ機能が全停止するので、本番環境での実施には十分に注意してください。)
 
 ```
-http://192.168.33.15:8000/
+(venv_app1) [vagrant@localhost yum.repos.d]$ sudo systemctl stop firewalld
+(venv_app1) [vagrant@localhost yum.repos.d]$ sudo systemctl disable firawalld
 ```
+
+ここではVagrantfileのprivate_networkの業で指定したのIPアドレスを利用して、ホストマシンのWebブラウザからアクセスすることができます。
+
+```
+http://192.168.33.15/
+```
+
+成功していればWebブラウザで以下のような画面が表示されます。
+[nginx snapshot](nginx_snapshot.png)
+
+以上でnginxの構築は完了です。
 
 ## Djangoをインストール
 Djangoのパッケージをpipを使ってインストールします。
