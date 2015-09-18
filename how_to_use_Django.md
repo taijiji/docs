@@ -1,12 +1,13 @@
+# Title: ゼロから始めるWebアプリケーション開発 (Python Django編)
+
 #概要
 今回はPythonのWebフレームワークであるDjangoを使って、Webアプリケーションを作っていきます。
-私自身がWebアプリ開発の勉強中なので、
-手順をまとめる意図でゼロベースでインフラ環境を構築するところから書いています。
-不要に感じる部分は適宜読み飛ばしてください。
+私自身がWebアプリケーション開発の勉強中なので、
+備忘録と手順をまとめる意図でゼロベースでインフラ環境を構築するところから書いています。
 
 #Python Webフレームワーク
-日本ではRuby on Railsが有名ですが、
-PythonにもWebフレームワークがいくつか用意されており、その中でも有名で多く使われている2つを紹介します。
+日本でWebアプリケーション開発というと、RubyとそのWebフレームワークであるRuby on Railsが圧倒的に有名ですが、
+PythonでもWebフレームワークがいくつか用意されており、その中でも有名で多く使われている2つを紹介します。
 
 ## [Django](https://www.djangoproject.com/)
 Python Webフレームワークとしては最も利用されています。テンプレートエンジンやORM(データベースとプログラム上のオブジェクトをマッピングしてくれる機能)、テスト機能などを包括しているオールインワン型のWebフレームワークです。またWebアプリケーションの管理者用GUIを自動生成してくれる便利な機能もあります。操作する対象ファイルが多いので学習コストはありますが、実サービスでも十分運用していくことができるので長く使い続けることができます。
@@ -18,10 +19,10 @@ Flaskは軽量なWebフレームワークで、Djangoの次に人気があるよ
 
 ----------------------------
 
-これらのほかにBottle, Pyramid, Tornade, PloneといったWebフレームワークがありますが、上記２つが多く使われているようです。
+これらのほかにBottle, Pyramid, Tornade, PloneといったWebフレームワークがありますが、現時点では上記２つが非常に多く使われているようです。
 
 今回はDjnagoを用いてWebアプリケーションを開発していきます。
-業務で使うWebアプリケーションを開発する場合は、Djangoであれば大体のものをカバーすることができます。
+業務で使うWebアプリケーションを開発する場合は、Djangoであれば広範囲の機能をカバーすることができます。
 初めは苦戦はするかもしれませんが、早いうちにDjangoに慣れておくことをお勧めします。
 Djangoを使うことで、モダンなWeb開発プロセスも学ぶことができます。
 
@@ -46,6 +47,9 @@ Djangoを使うことで、モダンなWeb開発プロセスも学ぶことが�
     - nginx 1.9.4
 
 ## Vagrantで仮想マシンを構築
+開発用途で仮想マシンを作ったり、壊したりすることが多い場合は、Vagrantを利用すると便利です。
+またVagrantのフォルダ共有機能を使うことで、仮想マシン上にあるファイルをホストマシンの使い慣れたテキストエディタで編集することができるので、
+アプリケーションを楽に開発することができます。
 
 まずは適当なディレクトリを作ります。
 
@@ -233,10 +237,10 @@ Python 2.7.5
 ```
 
 
-## pipをインストールする
+## pipをインストール
 
-次に、Pythonのパッケージマネージャであるpipを使う準備をします。
-Python2系では2.7.9以降、Python3系では3.4以降からpipがデフォルトでpipがインストールされています。
+Pythonのパッケージマネージャであるpipを利用する環境を構築します。
+Python2系では2.7.9以降、Python3系では3.4以降からpipがデフォルト機能としてインストールされています。
 
 ```
 [vagrant@localhost ~]$ python3 -m pip list
@@ -281,9 +285,10 @@ $ python get-pip.py –user
 ```
 
 ## pyvenvで仮想実行環境を構築
-次にvenvを構築します。
-利用パッケージやpythonのバージョンを、venvはプロジェクト単位で切り替えることができる仮想実行環境です。
-仮想実行環境を利用することでより、アプリケーションごとに環境を変えてテストしたり、
+次にpyvenv環境を構築します。
+pyenvは利用パッケージやpythonのバージョンを、プロジェクト単位で切り替えることができる仮想実行環境です。
+開発段階においては複数の機能実装を並行して開発する場合が多く、
+仮想実行環境を利用することでより、アプリケーションごとに開発環境を切り替えてテストしたり、
 アプケーションを動作させるためのパッケージを明文化することができます。
 Python2系ではvirtualenvなどをインストールする必要がありましたが、
 Python3系ではpyvenvというデフォルト機能として提供されています。
@@ -327,7 +332,7 @@ Python 3.4.3
 /vagrant/django_apps/venv_app1/bin/python
 ```
 
-このように、作成されたvenv_app1ディレクトリ配下に、新たにPython実行環境が作成されていることがわかります。
+このように、作成されたvenv_app1ディレクトリ配下に新たにPython実行環境が作成されていることがわかります。
 pipについても同様に、venv_app1ディレクトリ配下に作成されていることが確認できます。
 
 ```
@@ -356,19 +361,6 @@ pyvenv環境のpipもバージョンが古いので、upgradeしておきます�
 ```
 
 以降の章では、作成した仮想実行環境「venv_app1」を使って進めていきます。
-
-## Djangoをインストール
-Djangoのパッケージをpipを使ってインストールします。
-pipを使うことで、以下のように簡単にインストールをすることができます。
-
-```
-(venv_app1) [vagrant@localhost django_apps]$ pip install django
-
-(venv_app1) [vagrant@localhost django_apps]$ pip list
-Django (1.8.4)
-pip (7.1.2)
-setuptools (12.0.5)
-```
 
 # MriaDBをインストール
 MariaDBはMySQLをフォークして立ち上げられたプロジェクトであり、MySQLと機能互換があります。
@@ -456,8 +448,173 @@ Modelファイルに書かれた内容を元に、動的にDBが更新されて�
 
 # nginxをインストール
 
+Webサーバとしてnginxをインストールしていきます。
+
+仮想マシンに、nginx yum レポジトリを追記します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ cd /etc/yum.repos.d/
+
+(venv_app1) [vagrant@localhost django_apps]$ sudo vi nginx.repo
+
+# 下記を記載
+## ここでは最新versionをインストールするように記載しています。
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/mainline/centos/$releasever/$basearch/
+gpgcheck=0
+enabled=1
+```
+
+nginx.repoが作成されたことを確認します。
+
+```
+(venv_app1) [vagrant@localhost yum.repos.d]$ ls -al
+total 44
+drwxr-xr-x.  2 root root 4096 Sep 18 09:58 .
+drwxr-xr-x. 79 root root 8192 Sep 18 06:33 ..
+-rw-r--r--.  1 root root 1664 Mar 31 22:27 CentOS-Base.repo
+-rw-r--r--.  1 root root 1309 Mar 31 22:27 CentOS-CR.repo
+-rw-r--r--.  1 root root  649 Mar 31 22:27 CentOS-Debuginfo.repo
+-rw-r--r--.  1 root root 1331 Mar 31 22:27 CentOS-Sources.repo
+-rw-r--r--.  1 root root 1002 Mar 31 22:27 CentOS-Vault.repo
+-rw-r--r--.  1 root root  290 Mar 31 22:27 CentOS-fasttrack.repo
+-rw-r--r--   1 root root  109 Sep 18 09:58 nginx.repo
+```
+
+次に、yumコマンドでnginxをインストールします。
+
+```
+(venv_app1) [vagrant@localhost yum.repos.d]$ sudo yum install -y nginx
+```
+
+nginxコマンドを使って、正しくインストールできたことを確認します。
+
+```
+(venv_app1) [vagrant@localhost yum.repos.d]$ nginx -v
+nginx version: nginx/1.9.4
+```
+
+nginxを起動させます。
+
+```
+(venv_app1) [vagrant@localhost yum.repos.d]$ sudo systemctl start nginx.service
+(venv_app1) [vagrant@localhost yum.repos.d]$ sudo systemctl enable nginx.service
+```
+
+nginxは下記 2ファイルで設定されています。
+デフォルトでは「/usr/share/nginx/html」ディレクトリ配下の「index.html」をWebアクセスできるように設定されています。
+
+
+```
+(venv_app1) [vagrant@localhost yum.repos.d]$ less /etc/nginx/nginx.conf
+
+user  nginx;
+worker_processes  1;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+```
+
+```
+(venv_app1) [vagrant@localhost yum.repos.d]$ less /etc/nginx/conf.d/default.conf
+server {
+    listen       80;
+    server_name  localhost;
+
+    #charset koi8-r;
+    #access_log  /var/log/nginx/log/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    #location ~ \.php$ {
+    #    root           html;
+    #    fastcgi_pass   127.0.0.1:9000;
+    #    fastcgi_index  index.php;
+    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+    #    include        fastcgi_params;
+    #}
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    #location ~ /\.ht {
+    #    deny  all;
+    #}
+}
+```
+
+試しに、デフォルトで用意されているindex.htmlにHTTPアクセスできるか確認してみます。
+ここではVagrantで指定したprivate_networkのIPアドレスを利用して、ホストマシンのWebブラウザからアクセスしています。
+
+```
+http://192.168.33.15:8000/
+```
+
+## Djangoをインストール
+Djangoのパッケージをpipを使ってインストールします。
+pipを使うことで、以下のように簡単にインストールをすることができます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ pip install django
+
+(venv_app1) [vagrant@localhost django_apps]$ pip list
+Django (1.8.4)
+pip (7.1.2)
+setuptools (12.0.5)
+```
+
+
 環境構築はこれで完了です。
 次の章では、いよいよDjangoを使ってアプケーションを開発していきます。
+
+
 
 # Djangoプロジェクトを生成
 
