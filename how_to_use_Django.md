@@ -16,7 +16,9 @@ Flaskは軽量なWebフレームワークで、Djangoの次に人気があるよ
 データベースを使わないような小さいWebアプリケーションの開発に向いています。
 規模の大きいWebアプリケーションを作成する場合には、Flask以外のPythonパッケージを組み合わせながら開発することになります。
 
-これらのほかにもBottle, Pyramid, Tornade, PloneといったWebフレームワークがありますが、上記２つが多く使われているようです。
+----------------------------
+
+これらのほかにBottle, Pyramid, Tornade, PloneといったWebフレームワークがありますが、上記２つが多く使われているようです。
 
 今回はDjnagoを用いてWebアプリケーションを開発していきます。
 業務で使うWebアプリケーションを開発する場合は、Djangoであれば大体のものをカバーすることができます。
@@ -28,19 +30,27 @@ Djangoを使うことで、モダンなWeb開発プロセスも学ぶことが�
 まずは環境構築を進めていきます。以下の環境で開発を進めていきます。
 
 - ホストマシン
-  - MacBookAir OSX Yosemite 10.10.5
-- Vagrant 1.7.4
-- Virtualbox 4.3.18
-- CentOS 7.1.1503
-- Python 3.4.3
-- Django 1.8.4
+    - MacBookAir OSX Yosemite 10.10.5
+- 仮想マシン管理ソフトウェア
+    - Virtualbox 4.3.18
+    - Vagrant 1.7.4
+- 仮想マシン
+    - CentOS 7.1.1503
+- Python version
+    - Python 3.4.3
+- Web フレームワーク
+    - Django 1.8.4
+- データベース
+    - MariaDB 10.1.7
+- Webサーバ
+    - nginx 1.9.4
 
-#Vagrantで仮想マシンを立ち上げる
+## Vagrantで仮想マシンを構築
 
 まずは適当なディレクトリを作ります。
 
 ```
-% mkdir django_app
+% mkdir django_apps
 ```
 
 次に、下記のコマンドでvagrantの設定ファイルを作成します。
@@ -55,23 +65,35 @@ Djangoを使うことで、モダンなWeb開発プロセスも学ぶことが�
 ```
 % ls -al
 total 8
-drwxr-xr-x   4 taiji  staff   136  9  8 07:53 ./
-drwxr-xr-x  16 taiji  staff   544  9  8 07:49 ../
-drwxr-xr-x   3 taiji  staff   102  9  8 07:53 .vagrant/
--rw-r--r--   1 taiji  staff  3081  9  8 07:53 Vagrantfile
+drwxr-xr-x   3 taiji  staff   102  9 18 01:04 ./
+drwxr-xr-x  18 taiji  staff   612  9 18 01:03 ../
+-rw-r--r--   1 taiji  staff  3016  9 18 01:04 Vagrantfile
 ```
 
-vagrantfileを下記のように編集します。
-ここではDjangoで作成したwebアプリにアクセスするためのネットワーク設定も追加しています。
+次にVagrant boxで公開されているCentOS7のイメージをダウンロードおよびインストールをします。
+まずhttp://www.vagrantbox.es/ にて公開されているCentOS7のboxファイルのダウンロードを実施します。（完了までに数分かかります。）
+
+```
+% vagrant box add centos70 https://github.com/holms/vagrant-centos7-box/releases/download/7.1.1503.001/CentOS-7.1.1503-x86_64-netboot.box
+
+==> box: Box file was not detected as metadata. Adding it directly...
+==> box: Adding box 'centos70' (v0) for provider:
+    box: Downloading: https://github.com/holms/vagrant-centos7-box/releases/download/7.1.1503.001/CentOS-7.1.1503-x86_64-netboot.box
+==> box: Successfully added box 'centos70' (v0) for 'virtualbox'!
+```
+
+vagrantfileを編集して、下記のような内容に変更します。
+ここでDjangoで作成したWebアプリケーションにhttpアクセスするためのネットワーク設定も追加しています。
 
 ```rb
 Vagrant.configure(2) do |config|
    config.vm.box = "centos70"
-   config.vm.network "forwarded_port", guest: 8000, host: 80
+   config.vm.network "forwarded_port", guest: 80, host: 8080, id: "http"
+   config.vm.network "private_network", ip: "192.168.33.15"
 end
 ```
 
-次にvagrantで記述した仮想マシンを起動します。(起動まで数分かかります)
+Vagrantfileで記述した仮想マシンを起動します。(起動まで数分かかります)
 
 ```
 % vagrant up
