@@ -70,7 +70,7 @@ drwxr-xr-x  18 taiji  staff   612  9 18 01:03 ../
 -rw-r--r--   1 taiji  staff  3016  9 18 01:04 Vagrantfile
 ```
 
-次にVagrant boxで公開されているCentOS7のイメージをダウンロードおよびインストールをします。
+次にVagrant boxで公開されているCentOS7のイメージをダウンロードおよびインストールをします。  
 まずhttp://www.vagrantbox.es/ にて公開されているCentOS7のboxファイルのダウンロードを実施します。
 （完了までに数分かかります。）
 
@@ -166,7 +166,7 @@ CentOSにインストールされている全パッケージを最新にして�
 
 次章では、仮想マシンにPythonとDjanogをインストールしていきます。
 
-## Python3系をインストール
+# Python3系をインストール
 CentOS7では、デフォルトでPython2.7.5がインストールされています。
 
 ```
@@ -175,6 +175,7 @@ Python 2.7.5
 ```
 
 ここではPython3系の最新版であるPython3.4.3をインストールします。
+
 ```
 [vagrant@localhost ~]$ cd /usr/local/src
 [vagrant@localhost src]$ sudo wget https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tgz
@@ -209,40 +210,36 @@ drwxr-xr-x. 12 root root     4096 Jul 14 05:11 ..
 -rwxr-xr-x   1 root root      236 Sep 18 05:09 pyvenv-3.4
 ```
 
-インストールされたPythonおよびパッケージマネージャであるpipのバージョンを確認します。
+インストールされたPythonのバージョンを確認します。
+
 ```
 [vagrant@localhost ~]$ /usr/local/bin/python3.4 --version
 Python 3.4.3
-
-[vagrant@localhost Python-3.4.3]$ /usr/local/bin/pip3.4 --version
-pip 6.0.8 from /usr/local/lib/python3.4/site-packages (python 3.4)
 ```
 
 Python 3.4.3コマンドのPATHを通します。
 
 ```
-[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/python3.4 /usr/bin/python
-[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/pip3.4  /usr/bin/pip
-``
-こうすることで、python3 コマンドでpython3.4.3を呼び出すことができます。
+[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/python3.4 /usr/bin/python3
+```
+
+こうすることで「python3」コマンドでPython3.4.3を呼び出すことができるので、用途に応じてPython2系とPython3系を使い分けることができます。
 
 ```
-[vagrant@localhost ~]$ python3 -V
+[vagrant@localhost Python-3.4.3]$ python3 --version
 Python 3.4.3
-
-[vagrant@localhost ~]$ sudo python3 -V
-Python 3.4.3
+[vagrant@localhost Python-3.4.3]$ python --version
+Python 2.7.5
 ```
 
-# pipを使う
 
-次に、pipを使う準備をします。
-pipはPythonのサードパーティ製パッケージをインストールするコマンドです。
-pipコマンドは、Python3.3以前ではインストールする必要がありましたが、
-Python3.4以降ではデフォルトで提供されています。
+## pipをインストールする
+
+次に、Pythonのパッケージマネージャであるpipを使う準備をします。
+Python2系では2.7.9以降、Python3系では3.4以降からpipがデフォルトでpipがインストールされています。
 
 ```
-[vagrant@localhost ~]$ python3.4 -m pip list
+[vagrant@localhost ~]$ python3 -m pip list
 You are using pip version 6.0.8, however version 7.1.2 is available.
 You should consider upgrading via the 'pip install --upgrade pip' command.
 pip (6.0.8)
@@ -250,12 +247,40 @@ setuptools (12.0.5)
 ```
 
 pipのversionが古いようなので下記コマンドでpipをupgradeします。
+
 ```
 [vagrant@localhost ~]$ sudo python3 -m pip install --upgrade pip
 
 [vagrawnt@localhost ~]$ sudo python3 -m pip --version
 pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
 ```
+
+pipを使うたびに「 python3 -m pip」というコマンドを打つのは面倒なので、
+ここではシンボリックリンクで「pip3」コマンドでPython3系のpipを呼び出すようにします。
+
+```
+[vagrant@localhost Python-3.4.3]$ sudo ln -s /usr/local/bin/pip3.4  /usr/bin/pip3
+
+[vagrant@localhost Python-3.4.3]$ pip3 --version
+pip 7.1.2 from /usr/local/lib/python3.4/site-packages (python 3.4)
+```
+
+###参考 : Python2.7.8以前、Python3.3系以前でpipをインストール
+CentoOS7標準のPython2.7.5では、pipを別途インストールする必要があります。
+Python2.7.5でもpipを使いたい場合は下記の手順を試してください。
+今回はPython2系は使用しないので、実行しなくてOKです。
+
+```
+$ wget “https://bootstrap.pypa.io/get-pip.py”
+
+#rootユーザにインストール
+$ sudo python get-pip.py
+
+#非rootユーザにインストール
+$ python get-pip.py –user
+```
+
+
 
 # venv環境を使う
 次にvenvを構築します。
