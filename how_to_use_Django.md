@@ -93,7 +93,6 @@ vagrantfileを編集して、下記のような内容に変更します。
 ```rb
 Vagrant.configure(2) do |config|
    config.vm.box = "centos70"
-   config.vm.network "forwarded_port", guest: 80, host: 8080, id: "http"
    config.vm.network "private_network", ip: "192.168.33.15"
 end
 ```
@@ -625,11 +624,11 @@ pip (7.1.2)
 setuptools (12.0.5)
 ```
 
-## uwsgiをインストール
+## uWSGIをインストール
 Djangoで開発したWebアプリケーションとWebサーバを連動させるインタフェース(WSGI: Web Server Gateway Interfaceと呼ばれます)として、
-uwsgiのパッケージを利用します。
+uWSGIを利用します。
 
-pipを使って、uwsgiをインストールします。
+pipを使ってuWSGIパッケージをインストールします。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$ pip install uwsgi
@@ -643,52 +642,72 @@ uWSGI (2.0.11.1)
 ```
 
 実際にDjangoアプリケーションとWebサーバを連動させるにはもう少し設定が必要ですが、
-そちらはDjangoでWebアプリケーションを作るときに、合わせて手順を説明していきます。
+そちらはDjangoでWebアプリケーションを作るときに、手順を説明していきます。
 
 --------------------------------
 
 環境構築はこれで完了です。
-次の章では、いよいよDjangoを使ってアプケーションを開発していきます。
+次章から、いよいよDjangoを使ってアプケーションを開発していきます。
 
+# DjangoでWebアプリケーションを作る
+Djangoはサービス全体を示す「プロジェクト」という単位と、
+サービスの１機能を示す「アプリケーション」という単位が存在します。
+プロジェクトとアプリケーションの範囲は厳密に定義されているわけではありませんが、
+モデル自体はアプリケーションごとに定義しますが、
+実際のデータベースはプロジェクト全体で共有することになります。
 
+ここではプロジェクト名を「pj1」、
+アプリケーション名を「app1」という名前でを作っていきます。
+Webアプケーションの例として、IPアドレスの利用状況を管理するアプリケーションを作っていきます。
+なお、ここでは/vagrantディレクトリ配下にDjangoプロジェクトを作成していくことで、ホストマシン側のテキストエディタでアプリケーションファイルを編集しています。
 
-# Djangoプロジェクトを生成
+## Djangoプロジェクトを生成
+まず初めにDjangoプロジェクトを作成していきます。
 
 ```
-(env_app1)[vagrant@localhost app1]$ django-admin startproject app1
+(venv_app1) [vagrant@localhost ~]$ cd /vagrant/django_apps/
+(venv_app1) [vagrant@localhost django_apps]$
 
-(env_app1)[vagrant@localhost app1]$ ls -al
+(venv_app1) [vagrant@localhost django_apps]$ django-admin startproject pj1
+
+(venv_app1) [vagrant@localhost django_apps]$ ls -al
 total 0
-drwxr-xr-x 1 vagrant vagrant 136 Sep  8 03:06 .
-drwxr-xr-x 1 vagrant vagrant 204 Sep  8 02:53 ..
-drwxr-xr-x 1 vagrant vagrant 204 Sep  8 02:57 env_app1
-drwxr-xr-x 1 vagrant vagrant 136 Sep  8 03:06 app1
+drwxr-xr-x 1 vagrant vagrant 136 Sep 18 14:36 .
+drwxr-xr-x 1 vagrant vagrant 204 Sep 18 10:47 ..
+drwxr-xr-x 1 vagrant vagrant 136 Sep 18 14:36 pj1
+drwxr-xr-x 1 vagrant vagrant 272 Sep 18 06:12 venv_app1
 ```
 
 プロジェクトを生成すると下記のようなディレクトリが作成されます。
 
 ```
-app1/
+pj1/
+|-- manage.py
+`-- pj1
+    |-- __init__.py
+    |-- settings.py
+    |-- urls.py
+    `-- wsgi.py
+```
+
+pj1ディレクトリ配下に自動で作成されるmanage.pyが、
+DjangoでWebアプリケーションを開発する上で様々な便利な機能を備えるプログラムなので覚えておきましょう。
+
+## Djangoアプリケーションを生成
+次に、Djangoアプリケーションを作っていきます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ cd /vagrant/django_apps/pj1/
+(venv_app1) [vagrant@localhost pj1]$ python manage.py startapp app1
+```
+
+アプリケーションを生成すると、pj1ディレクトリ配下に、さらにapp1ディレクトリが作成されます。
+pj1/pj1ディレクトリ配下のファイル群が、全アプリケーションに共通する設定ファイル、
+pj1/app1ディレクトリ配下のファイル群がDjangoアプリケーション固有の設定ファイルです。
+
+```
+pj1/
 |-- app1
-|   |-- __init__.py
-|   |-- settings.py
-|   |-- urls.py
-|   `-- wsgi.py
-`-- manage.py
-```
-
-# Djangoアプリを作成します。
-
-```
-(env_app1)[vagrant@localhost app1]$  python manage.py startapp app1
-```
-
-ディレクトリが追加される
-
-```
-(env_app1)[vagrant@localhost app1]$ tree app1/
-app1/
-|-- app1_db
 |   |-- __init__.py
 |   |-- admin.py
 |   |-- migrations
@@ -696,15 +715,15 @@ app1/
 |   |-- models.py
 |   |-- tests.py
 |   `-- views.py
-|-- app1
-|   |-- __init__.py
-|   |-- __pycache__
-|   |   |-- __init__.cpython-34.pyc
-|   |   `-- settings.cpython-34.pyc
-|   |-- settings.py
-|   |-- urls.py
-|   `-- wsgi.py
-`-- manage.py
+|-- manage.py
+`-- pj1
+    |-- __init__.py
+    |-- __pycache__
+    |   |-- __init__.cpython-34.pyc
+    |   `-- settings.cpython-34.pyc
+    |-- settings.py
+    |-- urls.py
+    `-- wsgi.py
 ```
 
 
