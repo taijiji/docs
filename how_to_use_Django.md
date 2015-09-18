@@ -606,7 +606,7 @@ http://192.168.33.15/
 ```
 
 成功していればWebブラウザで以下のような画面が表示されます。
-[nginx snapshot](nginx_snapshot.png)
+[nginx snapshot](./nginx_snapshot.png)
 
 以上でnginxの構築は完了です。
 
@@ -691,7 +691,25 @@ pj1/
 ```
 
 pj1ディレクトリ配下に自動で作成されるmanage.pyが、
-DjangoでWebアプリケーションを開発する上で様々な便利な機能を備えるプログラムなので覚えておきましょう。
+Djangoを使ってWebアプリケーションを開発する上で様々な便利な機能を備えるプログラムです。
+
+例えば、Djangoの開発用簡易Webサーバを立ち上げる機能などがあります。
+これによりngixなどのWebサーバを用意せずとも、開発中のアプリケーションをWebブラウザで確認することが可能です。
+以下のコマンドで、簡易Webサーバを起動します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver
+```
+
+起動後、ホストマシンのWebブラウザで下記URLを入力してみます。
+
+```
+http://192.168.33.15:8000/
+```
+
+成功すると、Webブラウザで以下の画面を確認することができます。
+
+[django_snapshot](./django_snapshot.png)
 
 ## Djangoアプリケーションを生成
 次に、Djangoアプリケーションを作っていきます。
@@ -728,11 +746,17 @@ pj1/
 
 
 
-# Djanogアプリの初期設定
-アプリの初期設定を進めていきます。
+## Djanogアプリケーションの初期設定
+作成したアプリの初期設定を進めていきます。
+
+まず、プロジェクトに共通するの環境設定をしていきます。
+pj1/pj1/settings.pyを編集していきます。
 
 ```
-% vi app1/settings.py
+(venv_app1) [vagrant@localhost django_apps]$ cd /vagrant/django_apps/
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/settings.py
+
+#編集した部分のみを記載
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -741,8 +765,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    (下記を追記)
-    'django.contrib.humanize',
+
+    #下記にアプリケーション名を追記
     'app1'
  )
 
@@ -750,36 +774,36 @@ INSTALLED_APPS = (
 
  DATABASES = {
     'default': {
-        (下記を削除)
+        # デフォルトではSQLiteが設定されているため、MySQLに変更する
+        # 以下を削除
         #'ENGINE': 'django.db.backends.sqlieete3',
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        (下記を追加)
+
+        # DBの情報を追記
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': [database],
-        'USER': [user],
-        'PASSWORD': [password],
-        'HOST': [host],
-        'PORT': [port],
+        'NAME': 'app1_db',
+        'USER': 'app1_user',
+        'PASSWORD': 'app1_passwd',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
  }
 
 (中略)
 
-#削除
-LANGUAGE_CODE = 'en-us'
+# 言語設定を英語から日本語に変更
+# 以下を削除
+# LANGUAGE_CODE = 'en-us'
+# TIME_ZONE = 'UTC'
 
-TIME_ZONE = 'UTC'
-
-#追加
+#以下を追記
 LANGUAGE_CODE = 'ja'
-
 TIME_ZONE = 'Asia/Tokyo'
 
 (中略)
 
-#下記を追加
+#下記を追加 ??
 STATIC_ROOT=os.path.join(BASE_DIR, "static")
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 ```
 
 [project]/[project]/urls.pyを編集
