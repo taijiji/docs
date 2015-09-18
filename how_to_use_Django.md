@@ -634,11 +634,16 @@ pipを使って、uwsgiをインストールします。
 ```
 (venv_app1) [vagrant@localhost django_apps]$ pip install uwsgi
 
-
+(venv_app1) [vagrant@localhost django_apps]$ pip list
+Django (1.8.4)
+mysqlclient (1.3.6)
+pip (7.1.2)
+setuptools (12.0.5)
+uWSGI (2.0.11.1)
 ```
 
-DjangoアプリケーションとWebサーバを連動させるにはもう少し設定が必要ですが、
-そちらは実際にDjangoでWebアプリケーションを述べるときに、合わせて手順を説明していきます。
+実際にDjangoアプリケーションとWebサーバを連動させるにはもう少し設定が必要ですが、
+そちらはDjangoでWebアプリケーションを作るときに、合わせて手順を説明していきます。
 
 --------------------------------
 
