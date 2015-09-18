@@ -371,11 +371,90 @@ setuptools (12.0.5)
 ```
 
 # MriaDBをインストール
-MariaDBはMySQLをフォークして立ち上がれられたプロジェクトであり、MySQLと機能互換があります。
-データベース操作コマンドやPythonパッケージをMySQLと同様のものを使って操作することができます。
+MariaDBはMySQLをフォークして立ち上げられたプロジェクトであり、MySQLと機能互換があります。
+MySQLと同様のデータベース操作コマンドやPythonパッケージを使うことができます。
 
-MariaDBの
+MariaDBをインストールしていきます。
 
+```
+(venv_app1) [vagrant@localhost django_apps]$ sudo yum install -y mariadb-server mariadb-devel
+```
+
+MariaDBをPythonプログラムから操作するために、mysqlclientパッケージをインストールします。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ pip install  mysqlclient
+```
+
+MariaDBを起動します
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ sudo systemctl start mariadb
+(venv_app1) [vagrant@localhost django_apps]$ sudo systemctl enable mariadb
+```
+
+MariaDBにrootユーザでログインします。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$  mysql -u root
+
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 2
+Server version: 5.5.44-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+```
+
+今回作成するWebアプリケーション用に、新規にDBを作成します。
+ここでは、「app1_db」という名前のDBを作成します。
+
+```
+MariaDB [(none)]> CREATE DATABASE app1_db CHARACTER SET utf8;
+
+Query OK, 1 row affected (0.00 sec)
+```
+
+作成したDBにアクセスできるユーザを作成します。
+ここでは「app1_user」という名前のユーザを作成します。
+パスワードは「app1_passwd」を設定しています。
+```
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON app1_db.* TO app1_user@localhost IDENTIFIED BY 'app1_passwd';
+
+Query OK, 0 rows affected (0.00 sec)
+```
+
+一旦MySQLプロンプトを終了します。
+
+```
+MariaDB [(none)]> exit
+Bye
+```
+
+正常にDBとユーザが作成されたか確認するために、新しいユーザでログインし、DBを確認します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$  mysql -u app1_user -papp1_passwd
+
+MariaDB [(none)]> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| app1_db            |
+| test               |
++--------------------+
+3 rows in set (0.00 sec)
+```
+app1_dbが正常に作成されたことを確認することができました。
+
+これでDBの初期設定は完了です。
+Djangoを使っていると、MariaDBを直接コマンドを叩く機会は多くはありません。
+Webアプリケーションを開発するときは、DjangoのORM(Object-Relational Mapping)機能を利用することで
+Modelファイルに書かれた内容を元に、動的にDBが更新されていきます。
+
+# nginxをインストール
 
 環境構築はこれで完了です。
 次の章では、いよいよDjangoを使ってアプケーションを開発していきます。
@@ -408,15 +487,15 @@ app1/
 # Djangoアプリを作成します。
 
 ```
-(env_app1)[vagrant@localhost app1]$  python manage.py startapp as2518db
+(env_app1)[vagrant@localhost app1]$  python manage.py startapp app1
 ```
 
-as2518ディレクトリが追加される
+ディレクトリが追加される
 
 ```
 (env_app1)[vagrant@localhost app1]$ tree app1/
 app1/
-|-- as2518db
+|-- app1_db
 |   |-- __init__.py
 |   |-- admin.py
 |   |-- migrations
@@ -435,75 +514,7 @@ app1/
 `-- manage.py
 ```
 
-# MariaDBの構築
-次にDBを構築します。
-ここではMySQLのフォークであるmariadbを使います。
 
-```
-(env_app1)[root@localhost app1]# sudo yum install -y mariadb-server
-(env_app1)[vagrant@localhost app1]$ sudo yum install -y mariadb-devel
-(env_app1)[root@localhost app1]# pip install  mysqlclient
-```
-
-mariadbを起動します
-
-```
-(env_app1) [vagrant@localhost app1]$ sudo systemctl start mariadb
-(env_app1) [vagrant@localhost app1]$ sudo systemctl enable mariadb
-```
-
-MariaDBにrootユーザでログインします。
-
-```
-(env_app1) [vagrant@localhost app1]$ mysql -u root
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MariaDB connection id is 3
-Server version: 5.5.44-MariaDB MariaDB Server
-
-Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-```
-
-新規にDBを作成します。
-
-```
-MariaDB [(none)]> CREATE DATABASE {{ DB名 }} CHARACTER SET utf8;
-```
-
-DBにアクセスできるユーザを追加します。
-
-```
-MariaDB [(none)]> GRANT ALL PRIVILEGES ON {{ DB名 }}.* TO {{ ユーザ名 }}@localhost IDENTIFIED BY '{{ ユーザパスワード }}';
-```
-
-正常にDBとユーザが作成されたか確認します。
-
-```
-(env_app1) [vagrant@localhost app1]$ mysql -u {{ ユーザ名 }} -p{{ ユーザパスワード }}
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MariaDB connection id is 5
-Server version: 5.5.44-MariaDB MariaDB Server
-
-Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-```
-
-```
-MariaDB [(none)]> show databases;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| {{ DB名 }}           |
-| test               |
-+--------------------+
-3 rows in set (0.01 sec)
-
-```
-
-これでDBの初期設定は完了です。
 
 # Djanogアプリの初期設定
 アプリの初期設定を進めていきます。
@@ -565,7 +576,7 @@ TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
  urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     # 下記を追加
-    url(r'^as2518db/', include('app1.urls', namespace = 'app1')),
+    url(r'^app1_db/', include('app1.urls', namespace = 'app1')),
 ]
  ```
 
