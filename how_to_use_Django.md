@@ -692,7 +692,9 @@ pj1/
     `-- wsgi.py
 ```
 
-pj1ディレクトリ配下に自動で作成されるmanage.pyが、
+pj1/pj1ディレクトリ配下のファイル群が、全アプリケーションに共通する設定ファイルです。
+
+またpj1ディレクトリ配下に自動で作成されるmanage.pyが、
 Djangoを使ってWebアプリケーションを開発する上で様々な便利な機能を備えるプログラムです。
 
 例えば、Djangoの開発用簡易Webサーバを立ち上げる機能などがあります。
@@ -713,40 +715,6 @@ http://192.168.33.15:8000/
 
 [django_snapshot](./django_snapshot.png)
 
-## Djangoアプリケーションを生成
-次に、Djangoアプリケーションを作っていきます。
-
-```
-(venv_app1) [vagrant@localhost django_apps]$ cd /vagrant/django_apps/pj1/
-(venv_app1) [vagrant@localhost pj1]$ python manage.py startapp app1
-```
-
-アプリケーションを生成すると、pj1ディレクトリ配下に、さらにapp1ディレクトリが作成されます。
-pj1/pj1ディレクトリ配下のファイル群が、全アプリケーションに共通する設定ファイル、
-pj1/app1ディレクトリ配下のファイル群がDjangoアプリケーション固有の設定ファイルです。
-
-```
-pj1/
-|-- app1
-|   |-- __init__.py
-|   |-- admin.py
-|   |-- migrations
-|   |   `-- __init__.py
-|   |-- models.py
-|   |-- tests.py
-|   `-- views.py
-|-- manage.py
-`-- pj1
-    |-- __init__.py
-    |-- __pycache__
-    |   |-- __init__.cpython-34.pyc
-    |   `-- settings.cpython-34.pyc
-    |-- settings.py
-    |-- urls.py
-    `-- wsgi.py
-```
-
-
 
 ## Djanogプロジェクトの初期設定
 アプリケーション全体で共通するDjangoプロジェクトの初期設定を進めていきます。
@@ -760,20 +728,6 @@ pj1/pj1/settings.pyを編集していきます。
 
 ```
 # 追加・削除した部分のみを記載しています。
-
-INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    #アプリケーション名を追記
-    'app1'
- )
-
-(中略)
 
 # データベースはデフォルトでSQLiteが設定されているため、MySQLに変更する
  DATABASES = {
@@ -817,44 +771,20 @@ Djangoで作成されたデフォルトのWebページが日本語表示にな�
 
 [django_ja_snapshot](./django_ja_snapshot.png)
 
-次に、URL設定を作成したアプリケーション「app1」の情報を編集します。
-pj1/pj1/ulrs.pyを編集することで、Djangoアプリケーション単位のURLを定義することができます。
-詳細は後述しますが、Djangoアプリケーションごとにさらに細かいURLを定義するときは、pj1/app1/urls.pyを作成して追加してます。
-
-まずpj1/pj1/ulrs.pyだけを修正します。
-
- ```
- (venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/urls.py
-```
-
-```
- # 追加・削除した部分のみを記載しています。
-
-from django.conf.urls import include, url
-from django.contrib import admin
-
-urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-
-    # 下記を追加
-    url(r'^app1/', include('app1.urls', namespace = 'app1')),
-]
- ```
-
 以上でDjangoプロジェクトの初期設定は完了です。
 
 # データベースを初期化
 データベースを初期化するため以下のコマンドを実行します。
 実行するとSQL文が発行され、データベース「app1_db」に管理用テーブルが生成されます。
-このときに対話形式で、管理者情報を有力する必要があります。
-ここでは適当にID:admin, Pass:admin, e-mail:なしで作成しました。
+このときに対話形式で、管理者情報を入力する必要があります。
+ここでは適当にID:admin, Pass:admin, e-mail:admin@any.com(適当) で作成しました。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py syncdb
 
 Would you like to create one now? (yes/no): yes
 Username (leave blank to use 'vagrant'): admin
-Email address: (無記入でEnter)
+Email address: admin@any.com
 Password: admin
 Password (again): admin
 ```
@@ -907,13 +837,47 @@ Webブラウザで先ほど入力した管理者情報(ここではID:admin, PAS
 Djangoではユーザ管理に限らず、データベースが持つすべての情報をこの管理画面で追加・修正・削除することができます。
 このように専用アプリケーションを自分で作成せずとも、自動でデータベースの管理機能を作成してくれるところがDjangoの非常に便利な点です。
 
-## Modelを定義する
+## Djangoアプリケーションを生成
+次に、Djangoアプリケーションを作っていきます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ cd /vagrant/django_apps/pj1/
+(venv_app1) [vagrant@localhost pj1]$ python manage.py startapp app1
+```
+
+アプリケーションを生成すると、pj1ディレクトリ配下に、さらにapp1ディレクトリが作成されます。
+pj1/pj1ディレクトリ配下のファイル群が、全アプリケーションに共通する設定ファイルであることに対して、
+pj1/app1ディレクトリ配下のファイル群がDjangoアプリケーション固有の設定ファイルです。
+
+```
+pj1/
+|-- app1
+|   |-- __init__.py
+|   |-- admin.py
+|   |-- migrations
+|   |   `-- __init__.py
+|   |-- models.py
+|   |-- tests.py
+|   `-- views.py
+|-- manage.py
+`-- pj1
+    |-- __init__.py
+    |-- __pycache__
+    |   |-- __init__.cpython-34.pyc
+    |   `-- settings.cpython-34.pyc
+    |-- settings.py
+    |-- urls.py
+    `-- wsgi.py
+```
+
+## モデルを定義する
 ここからアプリケーションの中身を作っていきます。
 まずモデルを定義し、データベースのテーブル構造を定義していきます。
 
 Djangoでは、アプリケーションごとのディレクトリ配下のmodels.pyを修正し、
 テーブルをClass、フィールドを変数として定義していきます。
 
+### モデル要件
 ここでは、IPアドレスを管理するアプリケーションを想定して、以下のようなモデルを定義します。
 
 - IPアドレスの利用状況を管理するアプリケーション
@@ -931,21 +895,171 @@ Djangoでは、アプリケーションごとのディレクトリ配下のmodel
       - 自由記述可
       - ブランクの状態を許可する
 
-上記要件を満たすように pj1/app1/models.pyを以下のように編集します。
+### models.pyの編集
+モデル要件を満たすように pj1/app1/models.pyを以下のように編集します。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/models.py
 ```
 
-```
+```py
 from django.db import models
 
 class ipadress(models.Model):
-    ipaddress = models.IPAddressField(verbose_name='IP address', unique=True)
+    ipaddress = models.GenericIPAddressField(verbose_name='IP address', unique=True)
     status = models.CharField(verbose_name='Usage Status', max_length=16)
     description = models.CharField(verbose_name='Discription', blank = True, max_length=255)
 ```
 
+### Djangoアプリケーションのモデル有効化
+次にDjangoプロジェクトに対して、「app1」のモデルを有効化します。
+
+pj1/pj1/settings.pyの「INSTALLED_APPS」に追記します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/settings.py
+```
+
+```
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    #アプリケーション名を追記
+    'app1'
+ )
+```
+
+### モデル定義のデータベース反映
+次に追加したモデルをデータベースに反映させます。
+
+以下のコマンドでデータベースとの差分内容をSQL文にして発行します。
+(この時点ではSQLの実行はされていません。)
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py makemigrations app1
+
+Migrations for 'app1':
+  0001_initial.py:
+    - Create model ipadress
+```
+
+発行されたSQL文は下記コマンドで確認できます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py sqlmigrate app1 0001
+
+BEGIN;
+CREATE TABLE `app1_ipadress` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `ipaddress` char(39) NOT NULL UNIQUE, `status` varchar(16) NOT NULL, `description` varchar(255) NOT NULL);
+
+COMMIT;
+```
+
+次に、以下のコマンドで発行されたSQL文を実行します。この時点でデータベースが更新されます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py migrate
+
+Operations to perform:
+  Synchronize unmigrated apps: staticfiles, messages
+  Apply all migrations: admin, app1, auth, contenttypes, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+  Installing custom SQL...
+Running migrations:
+  Rendering model states... DONE
+  Applying app1.0001_initial... OK
+```
+
+MariaDBで確認すると新たにテーブル「app1_ipadress 」が追加されたことが確認できます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ mysql -u app1_user -papp_passwd
+
+MariaDB [(none)]> USE app1_db;
+Database changed
+
+MariaDB [app1_db]> SHOW TABLES;
++----------------------------+
+| Tables_in_app1_db          |
++----------------------------+
+| app1_ipadress              |
+| auth_group                 |
+| auth_group_permissions     |
+| auth_permission            |
+| auth_user                  |
+| auth_user_groups           |
+| auth_user_user_permissions |
+| django_admin_log           |
+| django_content_type        |
+| django_migrations          |
+| django_session             |
++----------------------------+
+11 rows in set (0.00 sec)
+```
+
+以降、models.pyを編集するたびに「python pj1/manage.py makemigrations app1」「python pj1/manage.py migrate」の２つのコマンドを実行することでデータベースを変更していきます。
+
+
+
+### 管理画面でアプリケーションのテーブルを編集
+データベースは更新されましたが、現時点では管理画面上にapp1用のテーブルは追加されていません。
+管理画面で管理するためにはapp1ディレクトリ配下のadmin.pyを編集していきます。
+
+```
+vi pj1/app1/admin.py
+```
+
+```
+from django.contrib import admin
+
+# 追記
+from app1.models import IPaddress
+
+# 追記
+admin.site.register(IPaddress)
+```
+
+簡易Webサーバを立ち上げて、管理画面を確認します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
+```
+
+```
+http://192.168.33.15:8000/admin/
+```
+
+
+## DjangoアプリケーションのViewを定義
+次に、URL設定を作成したアプリケーション「app1」の情報を編集します。
+pj1/pj1/ulrs.pyを編集することで、Djangoアプリケーション単位のURLを定義することができます。
+詳細は後述しますが、Djangoアプリケーションごとにさらに細かいURLを定義するときは、pj1/[アプリケーション名]ディレクトリ配下のurls.pyを作成して追加してます。
+
+まずpj1/pj1/ulrs.pyだけを修正します。
+
+ ```
+ (venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/urls.py
+```
+
+```
+ # 追加・削除した部分のみを記載しています。
+
+from django.conf.urls import include, url
+from django.contrib import admin
+
+urlpatterns = [
+    url(r'^admin/', include(admin.site.urls)),
+
+    # 下記を追加
+    url(r'^app1/', include('app1.urls', namespace = 'app1')),
+]
+ ```
 
 
 # Django Tips
