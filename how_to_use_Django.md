@@ -766,7 +766,7 @@ pj1/pj1/settings.pyを変更すると言語設定が日本語に変更されて�
 Djangoで作成されたデフォルトのWebページが日本語表示になったことが確認できます。
 
 ```
-(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
 ```
 
 [django_ja_snapshot](./django_ja_snapshot.png)
