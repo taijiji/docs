@@ -1,9 +1,10 @@
 # Title: ゼロから作るWebアプリケーション (Python Django編)
 
 #概要
-今回はPythonのWebフレームワークであるDjangoを使って、Webアプリケーションを作っていきます。
+PythonのWebフレームワークであるDjangoを使って、Webアプリケーションを作っていきます。
 私自身がWebアプリケーション開発の勉強中なので、
 備忘録と手順をまとめる意図でゼロベースでインフラ環境を構築するところから書いています。
+いざゼロから作ってみると、ものすごい量の手順になってしまったので、近い内にAnsibleで環境を自動構築するエントリーにも挑戦してみるつもりです。
 
 #Python Webフレームワーク
 日本でWebアプリケーション開発というと、RubyとそのWebフレームワークであるRuby on Railsが圧倒的に有名ですが、
@@ -895,41 +896,60 @@ MariaDB [app1_db]> SHOW TABLES;
 http://192.168.33.15:8000/admin/
 ```
 
-すると以下の管理画面が表示されます。
+すると以下の管理画面が表示されます。  
 [django_admin_snapshot](./django_admin_snapshot.png)
 
-Webブラウザで先ほど入力した管理者情報(ここではID:admin, PASS:admin)を入力すると管理画面に入ることができます。
+Webブラウザで先ほど入力した管理者情報(ここではID:admin, PASS:admin)を入力すると管理画面に入ることができます。  
 [django_admin_login](./django_admin_login.png)
 
 データベースを直接触らずとも、この管理者画面で管理者ユーザやグループを追加することができます。
 
-Djangoではユーザ管理に限らず、データベースが持つすべての情報をこの管理画面で追加・削除することができます。
+Djangoではユーザ管理に限らず、データベースが持つすべての情報をこの管理画面で追加・修正・削除することができます。
 このように専用アプリケーションを自分で作成せずとも、自動でデータベースの管理機能を作成してくれるところがDjangoの非常に便利な点です。
 
+## Modelを定義する
+ここからアプリケーションの中身を作っていきます。
+まずモデルを定義し、データベースのテーブル構造を定義していきます。
+
+Djangoでは、アプリケーションごとのディレクトリ配下のmodels.pyを修正し、
+テーブルをClass、フィールドを変数として定義していきます。
+
+ここでは、IPアドレスを管理するアプリケーションを想定して、以下のようなモデルを定義します。
+
+- IPアドレスの利用状況を管理するアプリケーション
+  - IP addressテーブル
+    - IP addressフィールド
+      - 所有するIPv4アドレス群を示す
+      - ネットワークセグメントは無視して、/32のアドレス単体を管理
+      - 値は一意
+    - Statusフィールド
+      - IPアドレスの利用状況のステータスを保持
+      - in_use / avalable / not_available の３つの状態を持つ
+      - ブランクの状態は許可しない
+    - Descriptionフィールド
+      - IPアドレスの利用状況についてのメモ
+      - 自由記述可
+      - ブランクの状態を許可する
+
+上記要件を満たすように pj1/app1/models.pyを以下のように編集します。
+
 ```
-(env_app1) [vagrant@localhost app1]$  python manage.py makemigrations
-(env_app1) [vagrant@localhost app1]$ python manage.py migrate
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/models.py
 ```
 
-# Djangoアプリの起動
-まずFiwarewallを無効にします(開発環境のみに実施します。本番サーバでは設定しないようにご注意ください)
+```
+from django.db import models
 
-```
-sudo systemctl stop firewalld
-```
-
-現在の状態でのDjango webアプリを立ち上げてみます。
-```
-(env_app1)[vagrant@localhost app1]$ python manage.py runserver 0.0.0.0:8000
+class ipadress(models.Model):
+    ipaddress = models.IPAddressField(verbose_name='IP address', unique=True)
+    status = models.CharField(verbose_name='Usage Status', max_length=16)
+    description = models.CharField(verbose_name='Discription', blank = True, max_length=255)
 ```
 
-webブラウザからアクセスします。
 
-```
-http://192.168.33.15:8000/
-```
 
-# Djangoのデータベースのダンプを出力する
+# Django Tips
+## Djangoのデータベースのダンプを出力する
 以下のコマンドでその時点で格納されているデータベースをJason形式で書き出すことができます。
 
 ```
