@@ -10,7 +10,7 @@
 PythonでもWebフレームワークがいくつか用意されており、その中でも有名で多く使われている2つを紹介します。
 
 ## [Django](https://www.djangoproject.com/)
-Python Webフレームワークとしては最も利用されています。テンプレートエンジンやORM(データベースとプログラム上のオブジェクトをマッピングしてくれる機能)、テスト機能などを包括しているオールインワン型のWebフレームワークです。またWebアプリケーションの管理者用GUIを自動生成してくれる便利な機能もあります。操作する対象ファイルが多いので学習コストはありますが、実サービスでも十分運用していくことができるので長く使い続けることができます。
+Python Webフレームワークとしては最も利用されています。テンプレートエンジンやORM(データベースとプログラム上のオブジェクトをマッピングしてくれる機能)、テスト機能や日本語化機能などを包括しているオールインワン型のWebフレームワークです。またWebアプリケーションの管理者用GUIを自動生成してくれる便利な機能もあります。操作する対象ファイルが多いので学習コストはありますが、実サービスでも十分運用していくことができるので長く使い続けることができます。
 
 ## [Flask](http://flask.pocoo.org/)
 Flaskは軽量なWebフレームワークで、Djangoの次に人気があるようです。オールインワン型のDjanogに比べると、 かなり少ないファイル構造で構成されており、学習コストも低く初心者向きです。
@@ -398,8 +398,8 @@ Copyright (c) 2000, 2015, Oracle, MariaDB Corporation Ab and others.
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 ```
 
-今回作成するWebアプリケーション用に、新規にDBを作成します。
-ここでは、「app1_db」という名前のDBを作成します。
+今回作成するWebアプリケーション用に、新規にデータベースを作成します。
+ここでは、「app1_db」という名前のデータベースを作成します。
 
 ```
 MariaDB [(none)]> CREATE DATABASE app1_db CHARACTER SET utf8;
@@ -407,7 +407,7 @@ MariaDB [(none)]> CREATE DATABASE app1_db CHARACTER SET utf8;
 Query OK, 1 row affected (0.00 sec)
 ```
 
-作成したDBにアクセスできるユーザを作成します。
+作成したデータベースにアクセスできるユーザを作成します。
 ここでは「app1_user」という名前のユーザを作成します。
 パスワードは「app1_passwd」を設定しています。
 ```
@@ -423,7 +423,7 @@ MariaDB [(none)]> exit
 Bye
 ```
 
-正常にDBとユーザが作成されたか確認するために、新しいユーザでログインし、DBを確認します。
+正常にデータベースとユーザが作成されたか確認するために、新しいユーザでログインします。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$  mysql -u app1_user -papp1_passwd
@@ -440,10 +440,10 @@ MariaDB [(none)]> SHOW DATABASES;
 ```
 app1_dbが正常に作成されたことを確認することができました。
 
-これでDBの初期設定は完了です。
-Djangoを使っていると、MariaDBを直接コマンドを叩く機会は多くはありません。
+これでMariaDBの初期設定は完了です。
+Djangoを使っていると、直接、MariaDBコマンドを叩く機会は多くはありません。
 Webアプリケーションを開発するときは、DjangoのORM(Object-Relational Mapping)機能を利用することで
-Modelファイルに書かれた内容を元に、動的にDBが更新されていきます。
+Models.pyという設定ファイルに書かれた内容を元に、動的にデータベースが反映されていきます。
 
 ## nginxをインストール
 
@@ -753,10 +753,9 @@ pj1/
 pj1/pj1/settings.pyを編集していきます。
 
 ```
-(venv_app1) [vagrant@localhost django_apps]$ cd /vagrant/django_apps/
+(venv_app1) [vagrant@localhost]$ cd /vagrant/django_apps/
 (venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/settings.py
 
-#編集した部分のみを記載
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -766,20 +765,21 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    #下記にアプリケーション名を追記
+    #アプリケーション名を追記
     'app1'
  )
 
 (中略)
 
+# データベースはデフォルトでSQLiteが設定されているため、MySQLに変更する
  DATABASES = {
     'default': {
-        # デフォルトではSQLiteが設定されているため、MySQLに変更する
+
         # 以下を削除
         #'ENGINE': 'django.db.backends.sqlieete3',
         #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 
-        # DBの情報を追記
+        # 作成したデータベース情報を追記
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'app1_db',
         'USER': 'app1_user',
@@ -792,6 +792,7 @@ INSTALLED_APPS = (
 (中略)
 
 # 言語設定を英語から日本語に変更
+
 # 以下を削除
 # LANGUAGE_CODE = 'en-us'
 # TIME_ZONE = 'UTC'
@@ -800,11 +801,21 @@ INSTALLED_APPS = (
 LANGUAGE_CODE = 'ja'
 TIME_ZONE = 'Asia/Tokyo'
 
-(中略)
-
-#下記を追加 ??
-STATIC_ROOT=os.path.join(BASE_DIR, "static")
 ```
+
+pj1/pj1/setting.pyを変更すると言語設定が日本語に変更されています。
+再び簡易Webサーバを起動して、Webブラウザで確認してみましょう。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver
+```
+
+```
+http://192.168.33.15:8000/
+```
+
+Djangoで作成されたデフォルトのWebページが日本語表示になったことが確認できます。
+[django_ja_snapshot](./django_ja_snapshot.png)
 
 [project]/[project]/urls.pyを編集
 
@@ -816,7 +827,7 @@ STATIC_ROOT=os.path.join(BASE_DIR, "static")
 ]
  ```
 
-# DBを初期化
+# データベースを初期化
 
 ```
 (env_app1) [vagrant@localhost app1]$  python manage.py makemigrations
@@ -841,14 +852,14 @@ webブラウザからアクセスします。
 http://192.168.33.15:8000/
 ```
 
-# DjangoのDBのダンプを出力する
-以下のコマンドでその時点で格納されているDBをJason形式で書き出すことができます。
+# Djangoのデータベースのダンプを出力する
+以下のコマンドでその時点で格納されているデータベースをJason形式で書き出すことができます。
 
 ```
 python manage.py dumpdata app1 --format=json --indent=2 > app1_dump.json
 ```
 
-書き出されたJason形式のDBを読み込むには下記コマンドを実施します。
+書き出されたJason形式のデータベースを読み込むには下記コマンドを実施します。
 
 ```
 python manage.py loaddata app1_dump.json
