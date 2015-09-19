@@ -426,6 +426,7 @@ Bye
 正常にデータベースとユーザが作成されたか確認するために、新しいユーザでログインします。
 
 ```
+# -pの後にスペースを入れないように注意
 (venv_app1) [vagrant@localhost django_apps]$  mysql -u app1_user -papp1_passwd
 
 MariaDB [(none)]> SHOW DATABASES;
@@ -746,16 +747,18 @@ pj1/
 
 
 
-## Djanogアプリケーションの初期設定
-作成したアプリの初期設定を進めていきます。
+## Djanogプロジェクトの初期設定
+アプリケーション全体で共通するDjangoプロジェクトの初期設定を進めていきます。
 
-まず、プロジェクトに共通するの環境設定をしていきます。
 pj1/pj1/settings.pyを編集していきます。
 
 ```
 (venv_app1) [vagrant@localhost]$ cd /vagrant/django_apps/
 (venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/settings.py
+```
 
+```
+# 追加・削除した部分のみを記載しています。
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -803,31 +806,105 @@ TIME_ZONE = 'Asia/Tokyo'
 
 ```
 
-pj1/pj1/setting.pyを変更すると言語設定が日本語に変更されています。
-再び簡易Webサーバを起動して、Webブラウザで確認してみましょう。
+pj1/pj1/settings.pyを変更すると言語設定が日本語に変更されています。
+再び簡易Webサーバを起動して、ホストマシンWebブラウザでみてみましょう。
+Djangoで作成されたデフォルトのWebページが日本語表示になったことが確認できます。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver
 ```
 
-```
-http://192.168.33.15:8000/
-```
-
-Djangoで作成されたデフォルトのWebページが日本語表示になったことが確認できます。
 [django_ja_snapshot](./django_ja_snapshot.png)
 
-[project]/[project]/urls.pyを編集
+次に、URL設定を作成したアプリケーション「app1」の情報を編集します。
+pj1/pj1/ulrs.pyを編集することで、Djangoアプリケーション単位のURLを定義することができます。
+詳細は後述しますが、Djangoアプリケーションごとにさらに細かいURLを定義するときは、pj1/app1/urls.pyを作成して追加してます。
+
+まずpj1/pj1/ulrs.pyだけを修正します。
 
  ```
- urlpatterns = [
+ (venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/urls.py
+```
+
+```
+ # 追加・削除した部分のみを記載しています。
+
+from django.conf.urls import include, url
+from django.contrib import admin
+
+urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+
     # 下記を追加
-    url(r'^app1_db/', include('app1.urls', namespace = 'app1')),
+    url(r'^app1/', include('app1.urls', namespace = 'app1')),
 ]
  ```
 
+以上でDjangoプロジェクトの初期設定は完了です。
+
 # データベースを初期化
+データベースを初期化するため以下のコマンドを実行します。
+実行するとSQL文が発行され、データベース「app1_db」に管理用テーブルが生成されます。
+このときに対話形式で、管理者情報を有力する必要があります。
+ここでは適当にID:admin, Pass:admin, e-mail:なしで作成しました。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py syncdb
+
+Would you like to create one now? (yes/no): yes
+Username (leave blank to use 'vagrant'): admin
+Email address: (無記入でEnter)
+Password: admin
+Password (again): admin
+```
+
+MariaDBにログインしてみると、データベースの中にDjango用テーブルが作成されていることが確認できます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$  mysql -u app1_user -papp1_passwd
+
+MariaDB [app1_db]> USE app1_db;
+Database changed
+
+MariaDB [app1_db]> SHOW TABLES;
++----------------------------+
+| Tables_in_app1_db          |
++----------------------------+
+| auth_group                 |
+| auth_group_permissions     |
+| auth_permission            |
+| auth_user                  |
+| auth_user_groups           |
+| auth_user_user_permissions |
+| django_admin_log           |
+| django_content_type        |
+| django_migrations          |
+| django_session             |
++----------------------------+
+10 rows in set (0.00 sec)
+```
+
+上記を実行すると、自動で管理者画面が生成されます。
+簡易Webサーバを立ち上げて、ホストマシンのWebブラウザで確認してみましょう。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
+```
+
+```
+http://192.168.33.15:8000/admin/
+```
+
+すると以下の管理画面が表示されます。
+[django_admin_snapshot](./django_admin_snapshot.png)
+
+Webブラウザで先ほど入力した管理者情報(ここではID:admin, PASS:admin)を入力すると管理画面に入ることができます。
+[django_admin_login](./django_admin_login.png)
+
+この画面で管理者ユーザやグループを追加することができます。
+
+Djangoでは管理者ユーザのみに限らず、データベースが持つすべての情報をこの管理画面で追加・削除することができます。
+このように専用アプリケーションを自分で作成せずとも、自動でデータベースの管理機能を作成してくれるところがDjangoの非常に便利な点です。
 
 ```
 (env_app1) [vagrant@localhost app1]$  python manage.py makemigrations
