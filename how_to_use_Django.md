@@ -702,7 +702,7 @@ Djangoを使ってWebアプリケーションを開発する上で様々な便�
 以下のコマンドで、簡易Webサーバを起動します。
 
 ```
-(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
 ```
 
 起動後、ホストマシンのWebブラウザで下記URLを入力してみます。
