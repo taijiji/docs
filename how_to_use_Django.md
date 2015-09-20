@@ -1,10 +1,9 @@
-# Title: ゼロから作るWebアプリケーション (Python Django編)
+# Title: Python Djangoで作るWebアプリケーション
 
 #概要
 PythonのWebフレームワークであるDjangoを使って、Webアプリケーションを作っていきます。
 私自身がWebアプリケーション開発の勉強中なので、
 備忘録と手順をまとめる意図でゼロベースでインフラ環境を構築するところから書いています。
-いざゼロから作ってみると、ものすごい量の手順になってしまったので、近い内にAnsibleで環境を自動構築するエントリーにも挑戦してみるつもりです。
 
 #Python Webフレームワーク
 日本でWebアプリケーション開発というと、RubyとそのWebフレームワークであるRuby on Railsが圧倒的に有名ですが、
@@ -1011,8 +1010,6 @@ MariaDB [app1_db]> SHOW TABLES;
 
 以降、models.pyを編集するたびに「python pj1/manage.py makemigrations app1」「python pj1/manage.py migrate」の２つのコマンドを実行することでデータベースを変更していきます。
 
-
-
 ### 管理サイトでアプリケーション用テーブルを登録
 データベースは更新されましたが、現時点では管理サイト上にapp1用のテーブルは追加されていません。
 管理サイトで管理するためにはapp1ディレクトリ配下のadmin.pyを編集していきます。
@@ -1125,7 +1122,7 @@ MariaDB [app1_db]> SELECT * FROM app1_ipaddress;
 
 このようにして、DjangoではSQLコマンドを叩かずに管理サイトからレコード情報を追加・削除していくことができます。
 
-##Tips データベースのレコード情報をテキストファイルに書き出す。
+### Tips データベースのレコード情報をテキストファイルに書き出す
 データベースを扱っていると、その時点での情報を書き出す場面が出て来ます。
 Djangoではデータベースのレコード情報をJSON/XML/YAMLのいずれかの形式で書き出す機能があります。
 ここではJSON形式で書き出します。
@@ -1169,7 +1166,7 @@ Djangoではデータベースのレコード情報をJSON/XML/YAMLのいずれ�
 ]
 ```
 
-作成されたファイルをgitなどで管理しておけば、レコード情報を時系列で管理することができます。
+作成されたファイルをgitで管理しておけば、レコード情報を時系列で管理することができます。  
 なお、書き出したファイルを読み込みたい場合は、下記のコマンドを実施します。
 
 ```
@@ -1179,19 +1176,22 @@ Installed 3 object(s) from 1 fixture(s)
 ```
 
 ## DjangoアプリケーションのViewを定義
-次に、URL設定を作成したアプリケーション「app1」の情報を編集します。
-pj1/pj1/ulrs.pyを編集することで、Djangoアプリケーション単位のURLを定義することができます。
-詳細は後述しますが、Djangoアプリケーションごとにさらに細かいURLを定義するときは、pj1/[アプリケーション名]ディレクトリ配下のurls.pyを作成して追加してます。
+モデル部分ができたので、次はDjangoアプリケーション表示を決定するViewを作っていきます。
 
-まずpj1/pj1/ulrs.pyだけを修正します。
+### URLを定義
+URL設定を定義します。
+pj1/pj1/ulrs.pyを編集することでDjangoアプリケーション単位のURLを定義します。
+Djangoアプリケーションごとのページなどのさらに細かいURLを定義するときは、
+アプリケーションディレクトリ配下のurls.pyを作成して追加してます。
+
+まずpj1/pj1/ulrs.pyを修正します。
+ここでは、「http://192.168.33.15:8000/app1」というURLが有効になるように設定しています。
 
  ```
  (venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/urls.py
 ```
 
 ```
- # 追加・削除した部分のみを記載しています。
-
 from django.conf.urls import include, url
 from django.contrib import admin
 
@@ -1202,3 +1202,22 @@ urlpatterns = [
     url(r'^app1/', include('app1.urls', namespace = 'app1')),
 ]
  ```
+
+次に、アプリケーションディレクトリ配下に新たにulrs.pyを作成します。
+ここでは以下２つのURLが有効になるように設定しています。
+- 「http://192.168.33.15:8000/app1/index.html」
+- 「http://192.168.33.15:8000/app1/change.html」
+
+```
+ (venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/urls.py
+```
+
+```py
+from django.conf.urls import patterns, url
+from app1 import views
+
+urlpatterns = patterns('',
+    url(r'^ipaddress/^$', views.index, name='ipaddress_list'),
+    url(r'^ipaddress/change/$', views.junos_convertor, name='ipaddress_change'),
+)
+```
