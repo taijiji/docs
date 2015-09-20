@@ -1202,19 +1202,3 @@ urlpatterns = [
     url(r'^app1/', include('app1.urls', namespace = 'app1')),
 ]
  ```
-
-
-# Django Tips
-## Djangoのデータベースのダンプを出力する
-以下のコマンドでその時点で格納されているデータベースをJason形式で書き出すことができます。
-
-```
-python manage.py dumpdata app1 --format=json --indent=2 > app1_dump.json
-```
-
-書き出されたJason形式のデータベースを読み込むには下記コマンドを実施します。
-
-
-
-Installed 3 object(s) from 1 fixture(s)
-```
