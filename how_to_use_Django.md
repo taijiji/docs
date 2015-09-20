@@ -821,7 +821,7 @@ MariaDB [app1_db]> SHOW TABLES;
 10 rows in set (0.00 sec)
 ```
 
-上記を実行すると、自動で管理者画面が生成されます。
+上記を実行すると、Django 管理サイトが自動で生成されます。
 簡易Webサーバを立ち上げて、ホストマシンのWebブラウザで確認してみましょう。
 
 ```
@@ -832,15 +832,15 @@ MariaDB [app1_db]> SHOW TABLES;
 http://192.168.33.15:8000/admin/
 ```
 
-すると以下の管理画面が表示されます。  
+すると以下の管理サイトが表示されます。  
 [django_admin_snapshot](./django_admin_snapshot.png)
 
-Webブラウザで先ほど入力した管理者情報(ここではID:admin, PASS:admin)を入力すると管理画面に入ることができます。  
+Webブラウザで先ほど入力した管理者情報(ここではID:admin, PASS:admin)を入力すると管理サイトに入ることができます。  
 [django_admin_login](./django_admin_login.png)
 
 データベースを直接触らずとも、この管理者画面で管理者ユーザやグループを追加することができます。
 
-Djangoではユーザ管理に限らず、データベースが持つすべての情報をこの管理画面で追加・修正・削除することができます。
+Djangoではユーザ管理に限らず、データベースが持つすべての情報をこの管理サイトで追加・修正・削除することができます。
 このように専用アプリケーションを自分で作成せずとも、自動でデータベースの管理機能を作成してくれるところがDjangoの非常に便利な点です。
 
 ## Djangoアプリケーションを生成
@@ -1013,9 +1013,9 @@ MariaDB [app1_db]> SHOW TABLES;
 
 
 
-### 管理画面でアプリケーションのテーブルを編集
-データベースは更新されましたが、現時点では管理画面上にapp1用のテーブルは追加されていません。
-管理画面で管理するためにはapp1ディレクトリ配下のadmin.pyを編集していきます。
+### 管理サイトでアプリケーションのテーブルを編集
+データベースは更新されましたが、現時点では管理サイト上にapp1用のテーブルは追加されていません。
+管理サイトで管理するためにはapp1ディレクトリ配下のadmin.pyを編集していきます。
 
 ```
 vi pj1/app1/admin.py
@@ -1031,7 +1031,7 @@ from app1.models import Ipaddress
 admin.site.register(Ipaddress)
 ```
 
-簡易Webサーバを立ち上げ、ホストマシンのWebブラウザで管理画面を確認します。
+簡易Webサーバを立ち上げ、ホストマシンのWebブラウザで管理サイトを確認します。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
