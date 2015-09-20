@@ -777,16 +777,22 @@ Djangoで作成されたデフォルトのWebページが日本語表示にな�
 データベースを初期化するため以下のコマンドを実行します。
 実行するとSQL文が発行され、データベース「app1_db」に管理用テーブルが生成されます。
 このときに対話形式で、管理者情報を入力する必要があります。
-ここでは適当にID:admin, Pass:admin, e-mail:admin@any.com(適当) で作成しました。
+ここでは適当にID:admin, Pass:admin, e-mail:なしで作成しました。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py syncdb
 
 Would you like to create one now? (yes/no): yes
 Username (leave blank to use 'vagrant'): admin
-Email address: admin@any.com
+Email address: （無記入でEnter）
 Password: admin
 Password (again): admin
+```
+
+もし管理者ユーザを増やしたいときは、下記コマンドを実行することで上記と同じ対話モードを実行することができます。
+
+```
+$ python pj1/manage.py createsuperuser
 ```
 
 MariaDBにログインしてみると、データベースの中にDjango用テーブルが作成されていることが確認できます。
@@ -905,14 +911,14 @@ Djangoでは、アプリケーションごとのディレクトリ配下のmodel
 ```py
 from django.db import models
 
-class ipadress(models.Model):
+class Ipaddress(models.Model):
     ipaddress = models.GenericIPAddressField(verbose_name='IP address', unique=True)
     status = models.CharField(verbose_name='Usage Status', max_length=16)
     description = models.CharField(verbose_name='Discription', blank = True, max_length=255)
 ```
 
-### Djangoアプリケーションのモデル有効化
-次にDjangoプロジェクトに対して、「app1」のモデルを有効化します。
+### Djangoアプリケーションのモデル定義を有効化
+次にDjangoプロジェクトに対して、「app1」のモデル定義を有効化します。
 
 pj1/pj1/settings.pyの「INSTALLED_APPS」に追記します。
 
@@ -934,7 +940,7 @@ INSTALLED_APPS = (
  )
 ```
 
-### モデル定義のデータベース反映
+### モデル定義をデータベース反映
 次に追加したモデルをデータベースに反映させます。
 
 以下のコマンドでデータベースとの差分内容をSQL文にして発行します。
@@ -945,7 +951,7 @@ INSTALLED_APPS = (
 
 Migrations for 'app1':
   0001_initial.py:
-    - Create model ipadress
+    - Create model IPaddress
 ```
 
 発行されたSQL文は下記コマンドで確認できます。
@@ -954,7 +960,7 @@ Migrations for 'app1':
 (venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py sqlmigrate app1 0001
 
 BEGIN;
-CREATE TABLE `app1_ipadress` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `ipaddress` char(39) NOT NULL UNIQUE, `status` varchar(16) NOT NULL, `description` varchar(255) NOT NULL);
+CREATE TABLE `app1_ipaddress` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `ipaddress` char(39) NOT NULL UNIQUE, `status` varchar(16) NOT NULL, `description` varchar(255) NOT NULL);
 
 COMMIT;
 ```
@@ -976,10 +982,10 @@ Running migrations:
   Applying app1.0001_initial... OK
 ```
 
-MariaDBで確認すると新たにテーブル「app1_ipadress 」が追加されたことが確認できます。
+MariaDBで確認すると新たにテーブル「app1_ipaddress 」が追加されたことが確認できます。
 
 ```
-(venv_app1) [vagrant@localhost django_apps]$ mysql -u app1_user -papp_passwd
+(venv_app1) [vagrant@localhost django_apps]$ mysql -u app1_user -papp1_passwd
 
 MariaDB [(none)]> USE app1_db;
 Database changed
@@ -988,7 +994,7 @@ MariaDB [app1_db]> SHOW TABLES;
 +----------------------------+
 | Tables_in_app1_db          |
 +----------------------------+
-| app1_ipadress              |
+| app1_ipaddress              |
 | auth_group                 |
 | auth_group_permissions     |
 | auth_permission            |
@@ -1019,13 +1025,13 @@ vi pj1/app1/admin.py
 from django.contrib import admin
 
 # 追記
-from app1.models import IPaddress
+from app1.models import Ipaddress
 
 # 追記
-admin.site.register(IPaddress)
+admin.site.register(Ipaddress)
 ```
 
-簡易Webサーバを立ち上げて、管理画面を確認します。
+簡易Webサーバを立ち上げ、ホストマシンのWebブラウザで管理画面を確認します。
 
 ```
 (venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
@@ -1034,6 +1040,9 @@ admin.site.register(IPaddress)
 ```
 http://192.168.33.15:8000/admin/
 ```
+
+このようにDjango 管理サイトにapp1のテーブル情報が表示されます。
+[django_admin_app1_snapshot](./django_admin_app1_snapshot.png)
 
 
 ## DjangoアプリケーションのViewを定義
