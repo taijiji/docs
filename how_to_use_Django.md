@@ -1013,7 +1013,7 @@ MariaDB [app1_db]> SHOW TABLES;
 
 
 
-### 管理サイトでアプリケーションのテーブルを編集
+### 管理サイトでアプリケーション用テーブルを登録
 データベースは更新されましたが、現時点では管理サイト上にapp1用のテーブルは追加されていません。
 管理サイトで管理するためにはapp1ディレクトリ配下のadmin.pyを編集していきます。
 
@@ -1105,6 +1105,78 @@ admin.site.register(Ipaddress, IpaddressAdmin)
 [django_admin_app1_regist3_snapshot](django_admin_app1_regist3_snapshot.png)
 
 
+念のため、実際のデータベースで正しくアドレス情報が追加されたか確認しておきます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ mysql -u app1_user -papp1_passwd
+
+MariaDB [(none)]> USE app1_db;
+
+MariaDB [app1_db]> SELECT * FROM app1_ipaddress;
++----+-------------+--------------+-----------------+
+| id | ipaddress   | status       | description     |
++----+-------------+--------------+-----------------+
+|  1 | 192.168.0.0 | not_avilable | Network address |
+|  2 | 192.168.0.1 | available    |                 |
+|  3 | 192.168.0.2 | available    |                 |
++----+-------------+--------------+-----------------+
+3 rows in set (0.00 sec)
+```
+
+このようにして、DjangoではSQLコマンドを叩かずに管理サイトからレコード情報を追加・削除していくことができます。
+
+##Tips データベースのレコード情報をテキストファイルに書き出す。
+データベースを扱っていると、その時点での情報を書き出す場面が出て来ます。
+Djangoではデータベースのレコード情報をJSON/XML/YAMLのいずれかの形式で書き出す機能があります。
+ここではJSON形式で書き出します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ mkdir pj1/app1/dumpdata
+
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py dumpdata app1 --format=json --indent=2 > pj1/app1/dumpdata/ap1_db_dump.json
+```
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ cat pj1/app1/dumpdata/ap1_db_dump.json
+[
+{
+  "pk": 1,
+  "fields": {
+    "status": "not_avilable",
+    "ipaddress": "192.168.0.0",
+    "description": "Network address"
+  },
+  "model": "app1.ipaddress"
+},
+{
+  "pk": 2,
+  "fields": {
+    "status": "available",
+    "ipaddress": "192.168.0.1",
+    "description": ""
+  },
+  "model": "app1.ipaddress"
+},
+{
+  "pk": 3,
+  "fields": {
+    "status": "available",
+    "ipaddress": "192.168.0.2",
+    "description": ""
+  },
+  "model": "app1.ipaddress"
+}
+]
+```
+
+作成されたファイルをgitなどで管理しておけば、レコード情報を時系列で管理することができます。
+なお、書き出したファイルを読み込みたい場合は、下記のコマンドを実施します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py loaddata pj1/app1/dumpdata/ap1_db_dump.json
+
+Installed 3 object(s) from 1 fixture(s)
+```
 
 ## DjangoアプリケーションのViewを定義
 次に、URL設定を作成したアプリケーション「app1」の情報を編集します。
@@ -1142,6 +1214,7 @@ python manage.py dumpdata app1 --format=json --indent=2 > app1_dump.json
 
 書き出されたJason形式のデータベースを読み込むには下記コマンドを実施します。
 
-```
-python manage.py loaddata app1_dump.json
+
+
+Installed 3 object(s) from 1 fixture(s)
 ```
