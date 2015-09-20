@@ -913,7 +913,7 @@ from django.db import models
 
 class Ipaddress(models.Model):
     ipaddress = models.GenericIPAddressField(verbose_name='IP address', unique=True)
-    status = models.CharField(verbose_name='Usage Status', max_length=16)
+    status = models.CharField(verbose_name='Status', max_length=16)
     description = models.CharField(verbose_name='Discription', blank = True, max_length=255)
 ```
 
@@ -1043,6 +1043,67 @@ http://192.168.33.15:8000/admin/
 
 このようにDjango 管理サイトにapp1のテーブル情報が表示されます。
 [django_admin_app1_snapshot](./django_admin_app1_snapshot.png)
+
+「追加」のボタンを押すことで、Ipaddressテーブルに値が追加できます。
+[django_admin_app1_regist_snapshot](./django_admin_app1_regist_snapshot.png)
+
+管理サイトを使って、3つのIPアドレス情報を登録してみます。
+
+```
+IP address : 192.168.0.0
+Status: not_available
+Discription: Network address
+
+IP address : 192.168.0.1
+Status: available
+Discription: (blank)
+
+IP address : 192.168.0.2
+Status: available
+Discription: (blank)
+```
+
+ここで管理サイト上に、登録した情報を出力させるには、models.pyに__str__関数を追加する必要があります。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/models.py
+```
+
+```
+from django.db import models
+
+class Ipaddress(models.Model):
+    ipaddress = models.GenericIPAddressField(verbose_name='IP address', unique=True)
+    status = models.CharField(verbose_name='Status', max_length=16)
+    description = models.CharField(verbose_name='Discription', blank = True, max_length=255)
+
+    # ここを追加
+    def  __str__(self):
+        return self.ipaddress
+```
+このようにすると、IPaddressテーブルの中身を表示させることができるようになります。
+[django_admin_app1_regist2_snapshot](django_admin_app1_regist2_snapshot.png)
+
+さらに、IPaddressテーブルのフィールド情報も表示させる場合はadmin.pyを編集します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/admin.py
+```
+
+```
+from django.contrib import admin
+from app1.models import Ipaddress
+
+# 以下を追加
+class IpaddressAdmin(admin.ModelAdmin):
+    list_display = ('ipaddress', 'status', 'description')
+
+admin.site.register(Ipaddress, IpaddressAdmin)
+```
+
+このようにすることで管理サイトの表示をカスタマイズしていくことができます。
+[django_admin_app1_regist3_snapshot](django_admin_app1_regist3_snapshot.png)
+
 
 
 ## DjangoアプリケーションのViewを定義
