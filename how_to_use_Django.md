@@ -939,7 +939,7 @@ INSTALLED_APPS = (
  )
 ```
 
-### モデル定義をデータベース反映
+### モデル定義をデータベースに反映
 次に追加したモデルをデータベースに反映させます。
 
 以下のコマンドでデータベースとの差分内容をSQL文にして発行します。
@@ -1179,15 +1179,16 @@ Installed 3 object(s) from 1 fixture(s)
 モデル部分ができたので、次はDjangoアプリケーション表示を決定するViewを作っていきます。
 
 ### URLを定義
-URL設定を定義します。
+まずはWebアプリケーションのURLを定義します。
 pj1/pj1/ulrs.pyを編集することでDjangoアプリケーション単位のURLを定義します。
 Djangoアプリケーションごとのページなどのさらに細かいURLを定義するときは、
 アプリケーションディレクトリ配下のurls.pyを作成して追加してます。
 
 まずpj1/pj1/ulrs.pyを修正します。
-ここでは、「http://192.168.33.15:8000/app1」 というURLが有効になるように設定しています。
+ここでは、 以下のURLが有効になるように設定しています。
+- http://192.168.33.15:8000/app1/
 
- ```
+```
  (venv_app1) [vagrant@localhost django_apps]$ vi pj1/pj1/urls.py
 ```
 
@@ -1204,9 +1205,8 @@ urlpatterns = [
  ```
 
 次に、アプリケーションディレクトリ配下に新たにulrs.pyを作成します。
-ここでは以下２つのURLが有効になるように設定しています。
-- 「http://192.168.33.15:8000/app1/ipaddress」
-- 「http://192.168.33.15:8000/app1/ipaddress/change」
+ここでは以下のURLが有効になるように設定しています。
+- http://192.168.33.15:8000/app1/ipaddress/
 
 ```
  (venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/urls.py
@@ -1218,6 +1218,335 @@ from app1 import views
 
 urlpatterns = patterns('',
     url(r'^ipaddress/^$', views.index, name='ipaddress_list'),
-    url(r'^ipaddress/change/$', views.junos_convertor, name='ipaddress_change'),
 )
 ```
+
+
+## Viewを定義( Hello Django編 )
+アプリケーションディレトクリ配下のveiws.pyを編集することでview定義します。
+まずは最も単純な「Hello Django」と表示するだけのViewを定義します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/models.py
+```
+
+```py
+from django.http import HttpResponse
+
+def ipaddress(request):
+    return HttpResponse("Hello Django")
+```
+
+簡易Webサーバを立ち上げて、ホストマシンのWebブラウザで確認してみます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
+```
+
+```
+http://192.168.33.15:8000/ipaddress/
+```
+
+[django_hello.png](./django_hello.png)
+
+単純な文字表示だけのWebアプリケーションであればこのように作成できますが、
+もう少し情報の多いWebアプリケーションはテンプレートエンジンやBootstrapなどのCSSフレームワークを利用して開発していきます。
+
+## Bootstrapのインストール
+以降のWebアプリケーションでは、CSSフレームワークであるBootstrapを使っていきます。
+Bootstrapを利用すると、最低限のhtml記述だけで見栄えが整ったWebページを作成することができます。
+
+まずBootstrapをダウンロードします。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ sudo wget https://github.com/twbs/bootstrap/releases/download/v3.3.5/bootstrap-3.3.5-dist.zip
+
+(venv_app1) [vagrant@localhost django_apps]$ sudo yum install -y unzip
+
+(venv_app1) [vagrant@localhost django_apps]$ sudo unzip bootstrap-3.3.5-dist.zip
+```
+
+正しく展開されると、下記のようなディレクリ構成になっています。
+
+```
+bootstrap-3.3.5-dist
+|-- css
+|   |-- bootstrap-theme.css
+|   |-- bootstrap-theme.css.map
+|   |-- bootstrap-theme.min.css
+|   |-- bootstrap.css
+|   |-- bootstrap.css.map
+|   `-- bootstrap.min.css
+|-- fonts
+|   |-- glyphicons-halflings-regular.eot
+|   |-- glyphicons-halflings-regular.svg
+|   |-- glyphicons-halflings-regular.ttf
+|   |-- glyphicons-halflings-regular.woff
+|   `-- glyphicons-halflings-regular.woff2
+`-- js
+    |-- bootstrap.js
+    |-- bootstrap.min.js
+    `-- npm.js
+```
+
+次に、Bootstrapで利用するJavaScriptライブラリであるjQueryをダウンロードします。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ sudo wget http://code.jquery.com/jquery-2.1.4.min.js
+```
+
+
+jQueryのファイルを、さきほどダウンロードしたboostrapの「bootstrap-3.3.5-dist/js/」に移動します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ mv jquery-2.1.4.min.js bootstrap-3.3.5-dist/js/
+```
+
+```
+bootstrap-3.3.5-dist
+|-- css
+|   |-- bootstrap-theme.css
+|   |-- bootstrap-theme.css.map
+|   |-- bootstrap-theme.min.css
+|   |-- bootstrap.css
+|   |-- bootstrap.css.map
+|   `-- bootstrap.min.css
+|-- fonts
+|   |-- glyphicons-halflings-regular.eot
+|   |-- glyphicons-halflings-regular.svg
+|   |-- glyphicons-halflings-regular.ttf
+|   |-- glyphicons-halflings-regular.woff
+|   `-- glyphicons-halflings-regular.woff2
+`-- js
+    |-- bootstrap.js
+    |-- bootstrap.min.js
+    |-- jquery-2.1.4.min.js
+    `-- npm.js
+```
+
+次に「pj1/app1」のアプリケーションディレクトリ配下に「static」ディレクトリを新規作成し、
+さきほどのbootstrap-3.3.5-distディレクトリ配下の全ファイルを を移動させます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ mkdir pj1/app1/static
+(venv_app1) [vagrant@localhost django_apps]$ mv bootstrap-3.3.5-dist/* pj1/app1/static/
+```
+
+最終的にこのようなディレクトリ構成になります。
+
+```
+pj1
+|-- app1
+|   |-- __init__.py
+|   |-- __pycache__
+|   |   |-- __init__.cpython-34.pyc
+|   |   |-- admin.cpython-34.pyc
+|   |   `-- models.cpython-34.pyc
+|   |-- admin.py
+|   |-- dumpdata
+|   |   `-- ap1_db_dump.json
+|   |-- migrations
+|   |   |-- 0001_initial.py
+|   |   |-- __init__.py
+|   |   `-- __pycache__
+|   |       |-- 0001_initial.cpython-34.pyc
+|   |       `-- __init__.cpython-34.pyc
+|   |-- models.py
+|   |-- static
+|   |   |-- css
+|   |   |   |-- bootstrap-theme.css
+|   |   |   |-- bootstrap-theme.css.map
+|   |   |   |-- bootstrap-theme.min.css
+|   |   |   |-- bootstrap.css
+|   |   |   |-- bootstrap.css.map
+|   |   |   `-- bootstrap.min.css
+|   |   |-- fonts
+|   |   |   |-- glyphicons-halflings-regular.eot
+|   |   |   |-- glyphicons-halflings-regular.svg
+|   |   |   |-- glyphicons-halflings-regular.ttf
+|   |   |   |-- glyphicons-halflings-regular.woff
+|   |   |   `-- glyphicons-halflings-regular.woff2
+|   |   `-- js
+|   |       |-- bootstrap.js
+|   |       |-- bootstrap.min.js
+|   |       |-- jquery-2.1.4.min.js
+|   |       `-- npm.js
+|   |-- tests.py
+|   |-- urls.py
+|   `-- views.py
+|-- manage.py
+`-- pj1
+    |-- __init__.py
+    |-- __pycache__
+    |   |-- __init__.cpython-34.pyc
+    |   |-- settings.cpython-34.pyc
+    |   |-- urls.cpython-34.pyc
+    |   `-- wsgi.cpython-34.pyc
+    |-- settings.py
+    |-- urls.py
+    `-- wsgi.py
+```
+
+次に、Django からBootsrapを操作するために django-bootstrap-formというPythonパッケージをインストールします。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ pip install django-bootstrap-form
+
+(venv_app1) [vagrant@localhost django_apps]$ pip list
+Django (1.8.4)
+django-bootstrap-form (3.2)
+mysqlclient (1.3.6)
+pip (7.1.2)
+setuptools (12.0.5)
+uWSGI (2.0.11.1)
+```
+
+次に、pj1/setting.pyのINSTALLED_APPSに、django-bootstrap-formを追記します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/settings.py
+
+
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    ##以下を追記
+    'bootstrapform',
+
+    'app1'
+)
+```
+
+## テンプレートを作成
+HTMLファイルのテンプレートを作っていきます。DjangoではJinja2というテンプレートエンジンを使い、
+HTMLテンプレートに変数を埋め込むことでWebアプリケーションを作成していきます。
+
+テンプレートエンジン Jinja2の使い方は[公式ページ](http://jinja.pocoo.org/docs/dev/)を参照してください。
+{{  }} や {%  %} で括った値を変数やプログラミング関数として扱うことができるのがJinja2の特徴です。
+
+今回のIPアドレス管理アプリケーションに合わせて、HTMLテンプレートを作成します。
+テンプレートは、「app1/templates/」ディレクトリ配下に配置します。
+
+ここでは、BootstrapのGetting Startedで紹介されている以下のページを参考に作っています。
+http://getbootstrap.com/examples/starter-template/
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ mkdir pj1/app1/templates
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/templates/ipaddress.html
+```
+
+```
+{% load staticfiles %}
+
+<!-- Adjust  bootstrap  navbar -->
+body { padding-top: 40px; }
+
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>App1</title>
+
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-theme.min.css' %}" rel="stylesheet">
+    <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">App1</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">IP address</a></li>
+            <li><a href="#">Function 2</a></li>
+            <li><a href="#">Function 3</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-header">IP address</h1>
+        <table class="table table-striped table-bordered">
+
+            <thead>
+                <tr>
+                    <td>IP address</td>
+                    <td>Status</td>
+                    <td>Description</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ipaddress in ipaddresses %}
+                <tr>
+                    <td>{{ ipaddress.ipaddress }}</td>
+                    <td>{{ ipaddress.status }}</td>
+                    <td>{{ ipaddress.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div><!-- /.container -->
+
+  </body>
+</html>
+```
+
+## Viewを定義( データベース表示編 )
+作成したテンプレートに合わせて、データベースにあるIPアドレスの情報を表示させるアプリケーションを作ってみます。
+pj1/app1/views.py を以下のように修正します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/models.py
+```
+
+```py
+from django.http import HttpResponse
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from app1.models import Ipaddress
+
+def ipaddress(request):
+    # データベース上のIPアドレス情報を配列型で取得
+    ipaddresses = Ipaddress.objects.all().order_by('id')
+
+    return  render_to_response(
+        'ipaddress.html', # テンプレート名を指定
+        {'ipaddresses' : ipaddresses }, # 取得したIPアドレス情報をテンプレート内の変数に代入
+        context_instance=RequestContext(request)
+        )
+```
+
+簡易Webサーバを立ち上げて、ホストマシンのWebブラウザで確認してみます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
+```
+
+```
+http://192.168.33.15:8000/ipaddress/
+```
+
+(django_app_ipaddresslist)[django_app_ipaddresslist.png]
+
+このように、テンプレートエンジンとView定義で、Djangoアプリケーションを作成することができます。
+# Webサーバとの連動
