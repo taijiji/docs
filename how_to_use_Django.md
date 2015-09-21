@@ -1049,7 +1049,7 @@ http://192.168.33.15:8000/admin/
 [django_admin_app1_snapshot](./django_admin_app1_snapshot.png)
 
 「追加」のボタンを押すことで、Ipaddressテーブルに値が追加できます。
-[django_admin_app1_regist_snapshot](./django_admin_app1_regist_snapshot.png)
+[django_admin_app1_regist_snapshot](./django_admin_app1_regist_snapshot_2.png)
 
 管理サイトを使って、3つのIPアドレス情報を登録してみます。
 
