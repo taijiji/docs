@@ -1546,7 +1546,7 @@ def ipaddress(request):
 http://192.168.33.15:8000/ipaddress/
 ```
 
-(django_app_ipaddresslist)[./django_app_ipaddresslist.png]
+[django_app_ipaddresslist](./django_app_ipaddresslist.png)
 
 このように、テンプレートエンジンとView定義で、Djangoアプリケーションを作成することができます。
 
