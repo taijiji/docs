@@ -902,7 +902,8 @@ Djangoでは、アプリケーションごとのディレクトリ配下のmodel
 
 ### models.pyの編集
 モデル要件を満たすように pj1/app1/models.pyを以下のように編集します。
-
+status_listという状態候補を用意することで、管理サイトやWebアプリケーションから
+プルダウンメニューでの選択を指定することができます。
 ```
 (venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/models.py
 ```
@@ -911,8 +912,14 @@ Djangoでは、アプリケーションごとのディレクトリ配下のmodel
 from django.db import models
 
 class Ipaddress(models.Model):
+
+    status_list = (
+        ('in_use', 'in use'),
+        ('available', 'available'),
+        ('not_available', 'not available')
+    )
     ipaddress = models.GenericIPAddressField(verbose_name='IP address', unique=True)
-    status = models.CharField(verbose_name='Status', max_length=16)
+    status = models.CharField(verbose_name='Status', choices=status_list, max_length=16)
     description = models.CharField(verbose_name='Discription', blank = True, max_length=255)
 ```
 
@@ -1066,12 +1073,17 @@ Discription: (blank)
 (venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/models.py
 ```
 
-```
+```py
 from django.db import models
 
 class Ipaddress(models.Model):
+    status_list = (
+        ('in_use', 'in use'),
+        ('available', 'available'),
+        ('not_available', 'not available')
+    )
     ipaddress = models.GenericIPAddressField(verbose_name='IP address', unique=True)
-    status = models.CharField(verbose_name='Status', max_length=16)
+    status = models.CharField(verbose_name='Status', choices=status_list, max_length=16)
     description = models.CharField(verbose_name='Discription', blank = True, max_length=255)
 
     # ここを追加
@@ -1222,7 +1234,7 @@ urlpatterns = patterns('',
 ```
 
 
-## Viewを定義( Hello Django編 )
+### Viewを定義( Hello Django編 )
 アプリケーションディレトクリ配下のveiws.pyを編集することでview定義します。
 まずは最も単純な「Hello Django」と表示するだけのViewを定義します。
 
@@ -1244,7 +1256,7 @@ def ipaddress(request):
 ```
 
 ```
-http://192.168.33.15:8000/ipaddress/
+http://192.168.33.15:8000/app1/ipaddress/
 ```
 
 [django_hello.png](./django_hello.png)
@@ -1252,7 +1264,7 @@ http://192.168.33.15:8000/ipaddress/
 単純な文字表示だけのWebアプリケーションであればこのように作成できますが、
 もう少し情報の多いWebアプリケーションはテンプレートエンジンやBootstrapなどのCSSフレームワークを利用して開発していきます。
 
-## Bootstrapのインストール
+### Bootstrapのインストール
 以降のWebアプリケーションでは、CSSフレームワークであるBootstrapを使っていきます。
 Bootstrapを利用すると、最低限のhtml記述だけで見栄えが整ったWebページを作成することができます。
 
@@ -1422,7 +1434,7 @@ INSTALLED_APPS = (
 )
 ```
 
-## テンプレートを作成
+### テンプレートを作成
 HTMLファイルのテンプレートを作っていきます。DjangoではJinja2というテンプレートエンジンを使い、
 HTMLテンプレートに変数を埋め込むことでWebアプリケーションを作成していきます。
 
@@ -1511,7 +1523,7 @@ body { padding-top: 40px; }
 </html>
 ```
 
-## Viewを定義( データベース表示編 )
+### Viewを定義( IPアドレス表示編 )
 作成したテンプレートに合わせて、データベースにあるIPアドレスの情報を表示させるアプリケーションを作ってみます。
 pj1/app1/views.py を以下のように修正します。
 
@@ -1543,11 +1555,16 @@ def ipaddress(request):
 ```
 
 ```
-http://192.168.33.15:8000/ipaddress/
+http://192.168.33.15:8000/app1/ipaddress/
 ```
 
 [django_app_ipaddresslist](./django_app_ipaddresslist.png)
 
-このように、テンプレートエンジンとView定義で、Djangoアプリケーションを作成することができます。
+このようにテンプレートファイルとView定義を組み合わせることで、比較的少ない記述でDjangoアプリケーションを作成することができます。
+
+## Viewを定義( IPアドレス管理編 )
+次はアプリケーションにIPアドレス情報の変更機能を追加してみます。
+
+
 
 # Webサーバとの連動
