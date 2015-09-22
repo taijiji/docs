@@ -1452,7 +1452,7 @@ http://getbootstrap.com/examples/starter-template/
 (venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/templates/ipaddress.html
 ```
 
-```
+```html
 {% load staticfiles %}
 
 <!-- Adjust  bootstrap  navbar -->
@@ -1563,8 +1563,259 @@ http://192.168.33.15:8000/app1/ipaddress/
 このようにテンプレートファイルとView定義を組み合わせることで、比較的少ない記述でDjangoアプリケーションを作成することができます。
 
 ## Viewを定義( IPアドレス管理編 )
-次はアプリケーションにIPアドレス情報の変更機能を追加してみます。
+次は応用編として、アプリケーションにIPアドレス情報の変更機能を追加してみます。
+詳細の解説はしませんが、変更したファイルを書いておきます。
 
+まずapp1/urls.pyを下記のように編集します。
+ここでは新たにhttp://192.168.33.15:8000/app1/ipaddress/change/1/ などのURLを定義し、
+データベース上のIPアドレス情報のプライマリIDが「ipaddress_id」に紐づくように指定しています。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/urls.py
+```
+
+```py
+from django.conf.urls import patterns, url
+from app1 import views
+
+urlpatterns = patterns('',
+    url(r'^ipaddress/$', views.ipaddress, name='ipaddress'),
+    url(r'^ipaddress/change/(?P<ipaddress_id>\d+)/$', views.ipaddress_change, name='ipaddress_change'),
+)
+```
+
+次に、ipaddressテーブルのフィールド情報をそのまま値を変更できるようにするために、app1/forms.pyを作成します。
+forms.pyを作成することで、HTMLテンプレートに{{ form }}と記述することで全フィールドを呼び出すことができます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/forms.py
+```
+
+```py
+from django.forms import ModelForm
+from app1.models import Ipaddress
+
+class IpaddressForm(ModelForm):
+    class Meta:
+        model = Ipaddress
+        fields = ('id', 'ipaddress', 'status', 'description')
+```
+
+次に、app1/veiws.pyを以下のように追記します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/views.py
+```
+
+```py
+# -*- coding: utf-8 -*-
+from django.http import HttpResponse
+from django.shortcuts import render_to_response,  get_object_or_404, redirect
+from django.template import RequestContext
+from app1.models import Ipaddress
+from app1.forms import IpaddressForm
+
+def ipaddress(request):
+    ipaddresses = Ipaddress.objects.all().order_by('id')
+
+    return  render_to_response(
+        'ipaddress.html',
+        {'ipaddresses' : ipaddresses },
+        context_instance=RequestContext(request)
+        )
+
+def ipaddress_change(request, ipaddress_id=None):
+
+    if ipaddress_id:
+        ipaddress =  get_object_or_404(Ipaddress, pk=ipaddress_id)
+    else:
+        ipaddress = Ipaddress()
+
+    if request.method == 'POST':
+        # 基本的にPOSTが推奨される
+        form = IpaddressForm(request.POST, instance=ipaddress)
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.save()
+            return redirect('app1:ipaddress')
+    else:
+        # GETの場合はこちらを実行
+        form = IpaddressForm(instance=ipaddress)
+
+    return  render_to_response(
+        'ipaddress_change.html',
+        dict(form=form, ipaddress_id=ipaddress_id),
+        context_instance=RequestContext(request)
+        )
+```
+
+テンプレートファイルapp1/template/ipaddress.htmlを以下のように追記します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/templates/ipaddress.html
+```
+
+```html
+{% load staticfiles %}
+
+<!-- Adjust  bootstrap  navbar -->
+body { padding-top: 40px; }
+
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>App1</title>
+
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-theme.min.css' %}" rel="stylesheet">
+    <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">App1</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">IP address</a></li>
+            <li><a href="#">Function 2</a></li>
+            <li><a href="#">Function 3</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-header">IP address</h1>
+        <table class="table table-striped table-bordered">
+
+            <thead>
+                <tr>
+                    <td>ID</td>
+                    <td>IP address</td>
+                    <td>Status</td>
+                    <td>Description</td>
+                    <td>Function</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ipaddress in ipaddresses %}
+                <tr>
+                    <td>{{ ipaddress.id }}</td>
+                    <td>{{ ipaddress.ipaddress }}</td>
+                    <td>{{ ipaddress.status }}</td>
+                    <td>{{ ipaddress.description }}</td>
+                    <td>
+                        <a href="{% url 'app1:ipaddress_change' ipaddress_id=ipaddress.id  %}" class="btn btn-default btn-sm">Change Status</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div><!-- /.container -->
+
+
+  </body>
+</html>
+```
+
+また、変更機能のために新たにテンプレートファイルapp1/template/ipaddress_change.htmlを作成します。
+前半はapp1/template/ipaddress.htmlの内容をコピーしています。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi pj1/app1/templates/ipaddress_change.html
+```
+
+```html
+{% load staticfiles %}
+
+<!-- Adjust  bootstrap  navbar -->
+body { padding-top: 40px; }
+
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>App1</title>
+
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-theme.min.css' %}" rel="stylesheet">
+    <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">App1</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">IP address</a></li>
+            <li><a href="#">Function 2</a></li>
+            <li><a href="#">Function 3</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+      <h3 class="page-header">Change Status</h3>
+      <form action="" method="post" class="form-horizontal" role="form">
+          {% csrf_token %}
+          {{ form }}
+          <div class="form-group">
+            <div class="container">
+                <button type="submit" class="btn btn-primary">Change Status</button>
+                <a href="{% url 'app1:ipaddress' %}" class="btn btn-default btn-sm">Back</a>
+            </div>
+          </div>
+      </form>
+    </div><!--/.nav-collapse -->
+
+  </body>
+</html>
+```
+
+以上のようにファイルを編集することで、最終的に以下のようなアプリケーションを作成することができます。
+
+再度、簡易Webサーバを立ち上げて、ホストマシンのWebブラウザで確認してみます。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ python pj1/manage.py runserver 0.0.0.0:8000
+```
+
+```
+http://192.168.33.15:8000/app1/ipaddress/
+http://192.168.33.15:8000/app1/ipaddress/change/1/
+http://192.168.33.15:8000/app1/ipaddress/change/2/
+http://192.168.33.15:8000/app1/ipaddress/change/3/
+```
+
+[django_app_ipaddress_change1](./django_app_ipaddress_change1.png)
 
 
 # Webサーバとの連動
