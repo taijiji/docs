@@ -1800,7 +1800,8 @@ body { padding-top: 40px; }
 </html>
 ```
 
-以上のようにファイルを編集することで、最終的に以下のようなアプリケーションを作成することができます。
+以上のようにファイルを編集することで、
+「Change Status」ボタンをクリックしてIPアドレス情報を変更することができるアプリケーションを作成することができます。
 
 再度、簡易Webサーバを立ち上げて、ホストマシンのWebブラウザで確認してみます。
 
@@ -1810,12 +1811,10 @@ body { padding-top: 40px; }
 
 ```
 http://192.168.33.15:8000/app1/ipaddress/
-http://192.168.33.15:8000/app1/ipaddress/change/1/
-http://192.168.33.15:8000/app1/ipaddress/change/2/
-http://192.168.33.15:8000/app1/ipaddress/change/3/
 ```
 
-[django_app_ipaddress_change1](./django_app_ipaddress_change1.png)
+[django_app_ipaddress_change1](./django_app_ipaddress_change1.png)  
+[django_app_ipaddress_change2](./django_app_ipaddress_change2.png)
 
 
 # Webサーバとの連動
