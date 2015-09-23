@@ -1817,4 +1817,75 @@ http://192.168.33.15:8000/app1/ipaddress/
 [django_app_ipaddress_change2](./django_app_ipaddress_change2.png)
 
 
-# Webサーバとの連動
+# Webサーバにデプロイ
+
+これまでの章では、Djangoで用意されている簡易Webサーバを使って確認してきましたが、
+以降の章では、実際のWebサーバに展開する手順を説明します。
+
+Webサーバはnginx, DjangoアプリケーションとのインタフェースにuWSGIを使います。
+
+## uwsgi単体でデプロイ
+まずはuwsgi単体でDjnago アプリケーションが動作するか確認します。
+
+pj1/pj1/wsgi.pyを指定してuwsgiを起動します。
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ uwsgi --http :8000 --module pj1/pj1/wsgi.py
+```
+
+## nginxの設定
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi nginx_pj1.conf
+```
+```
+# the upstream component nginx needs to connect to
+upstream django {
+    server 127.0.0.1:8001;
+}
+
+# configuration of the server
+server {
+    listen      8000;
+    server_name 192.168.33.15;
+    charset     utf-8;
+
+    client_max_body_size 75M;
+
+    location /static {
+        alias /vagrant/django_apps/pj1/app1/static;
+    }
+
+    # Finally, send all non-media requests to the Django server.
+    location / {
+        uwsgi_pass  django;
+        include     /vagrant/django_apps/uwsgi_params;n
+    }
+}
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ vi uwsgi_params
+```
+
+```
+uwsgi_param  QUERY_STRING       $query_string;
+uwsgi_param  REQUEST_METHOD     $request_method;
+uwsgi_param  CONTENT_TYPE       $content_type;
+uwsgi_param  CONTENT_LENGTH     $content_length;
+
+uwsgi_param  REQUEST_URI        $request_uri;
+uwsgi_param  PATH_INFO          $document_uri;
+uwsgi_param  DOCUMENT_ROOT      $document_root;
+uwsgi_param  SERVER_PROTOCOL    $server_protocol;
+uwsgi_param  REQUEST_SCHEME     $scheme;
+uwsgi_param  HTTPS              $https if_not_empty;
+
+uwsgi_param  REMOTE_ADDR        $remote_addr;
+uwsgi_param  REMOTE_PORT        $remote_port;
+uwsgi_param  SERVER_PORT        $server_port;
+uwsgi_param  SERVER_NAME        $server_name;
+
+```
+(venv_app1) [vagrant@localhost django_apps]$ sudo mkdir /etc/nginx/sites-enable/
+(venv_app1) [vagrant@localhost django_apps]$ sudo ln -s nginx_pj1.conf /etc/nginx/sites-enable/
+```
